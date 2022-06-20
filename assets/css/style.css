@@ -1028,3 +1028,28 @@ section .container {
 .credits a:hover {
   color: #fff;
 }
+
+/*--------------------------------------------------------------
+# Articles
+--------------------------------------------------------------*/
+.top-left {
+  position: absolute;
+  top: 8px;
+  left: 16px;
+}
+.article-colorDark{
+  color: #0351AA;
+  border-style:groove;
+  border-color:#0351AA;
+  border-width: 1px;
+}
+
+.article-colorLight{
+  color: #AFCBEE;
+  border-style:groove;
+  border-color:#AFCBEE;
+  border-width: 1px;
+}
+.article-rounded{
+  border-radius: 15px 50px 30px;
+}
