@@ -1053,3 +1053,22 @@ section .container {
 .article-rounded{
   border-radius: 15px 50px 30px;
 }
+
+
+.overlapName {
+  width: 100%;
+  text-align: left;
+  color: #ffffff;
+  font-weight: 800;
+  padding: 0;
+  margin-bottom: -20px;
+  box-sizing: border-box;
+  font-family: "Poppins", sans-serif;
+}
+.overlapNamespan {
+  font-size: 5vw;
+  text-shadow: -0.08em 0.03em 0.12em rgba(0, 0, 0, 0.7);
+}
+div span:not(:first-child) {
+  margin-left: -0.18em;
+}
