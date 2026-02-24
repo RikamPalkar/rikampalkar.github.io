@@ -556,20 +556,50 @@ section .container {
 }
 .resume .resume-item h4 {
   line-height: 18px;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: 600;
-  text-transform: uppercase;
   font-family: "Poppins", sans-serif;
-  color: #18d26e;
   margin-bottom: 10px;
+  text-transform: none;
+}
+.resume .resume-item h4 .company-name {
+  font-weight: 600;
+  color: #18d26e;
+  text-transform: none;
+}
+.resume .resume-item h4 .separator {
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 8px;
+}
+.resume .resume-item h4 .job-title {
+  font-weight: 500;
+  color: #fff;
+  text-transform: none;
+}
+.resume .resume-item h4 .date-range {
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+  text-transform: none;
 }
 .resume .resume-item h5 {
-  font-size: 16px;
-  background: rgba(255, 255, 255, 0.15);
-  padding: 5px 15px;
-  display: inline-block;
-  font-weight: 600;
+  font-size: 15px;
+  padding: 0 !important;
+  display: block;
+  font-weight: normal;
   margin-bottom: 10px;
+  background: none !important;
+  border: none !important;
+}
+.resume .resume-item h5 .company-name {
+  font-weight: 600;
+  color: #fff;
+}
+.resume .resume-item h5 .date-range {
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  margin-left: 10px;
+  font-size: 14px;
 }
 .resume .resume-item ul {
   padding-left: 20px;
