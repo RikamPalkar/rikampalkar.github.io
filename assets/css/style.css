@@ -312,6 +312,12 @@ section .container {
   section.section-show {
     top: 80px;
   }
+  .credly-link {
+    text-align: left;
+  }
+  .credly-link a {
+    justify-content: flex-start !important;
+  }
 }
 
 .section-title h2 {
