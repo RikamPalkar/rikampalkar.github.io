@@ -1458,17 +1458,19 @@ section .container {
 
 .lightbox-content {
   position: relative;
-  width: 90%;
-  max-width: 1200px;
-  height: 90%;
+  width: auto;
+  max-width: 900px;
+  height: auto;
+  max-height: 90vh;
   display: flex;
   flex-direction: column;
+  padding: 20px;
 }
 
 .lightbox-close {
   position: absolute;
-  top: -40px;
-  right: 0;
+  top: -30px;
+  right: 20px;
   background: rgba(24, 210, 110, 0.2);
   border: 2px solid #18d26e;
   color: #18d26e;
@@ -1481,6 +1483,7 @@ section .container {
   cursor: pointer;
   transition: all 0.3s ease;
   font-size: 20px;
+  z-index: 20;
 }
 
 .lightbox-close:hover {
@@ -1515,11 +1518,11 @@ section .container {
 }
 
 .lightbox-nav.prev {
-  left: 20px;
+  left: -60px;
 }
 
 .lightbox-nav.next {
-  right: 20px;
+  right: -60px;
 }
 
 .lightbox-certificate {
@@ -1583,18 +1586,54 @@ section .container {
     height: 150px;
   }
   
+  .certificate-lightbox {
+    padding: 20px;
+  }
+  
+  .lightbox-content {
+    width: 95%;
+    height: auto;
+    max-height: 80vh;
+  }
+  
+  .lightbox-certificate {
+    flex: none;
+    height: auto;
+    max-height: 60vh;
+    margin-bottom: 15px;
+    position: relative;
+  }
+  
+  .lightbox-close {
+    top: -35px;
+    right: 20px;
+    width: 35px;
+    height: 35px;
+    font-size: 18px;
+  }
+  
   .lightbox-nav {
     width: 40px;
     height: 40px;
     font-size: 20px;
+    top: 40%;
+    transform: translateY(-50%);
+  }
+  
+  .lightbox-nav:hover {
+    transform: translateY(-50%) scale(1.1);
   }
   
   .lightbox-nav.prev {
-    left: 10px;
+    left: 5px;
   }
   
   .lightbox-nav.next {
-    right: 10px;
+    right: 5px;
+  }
+  
+  .lightbox-info h4 {
+    font-size: 16px;
   }
 }
 
