@@ -665,6 +665,9 @@ section .container {
   color: #18d26e;
   text-decoration: none;
   transition: all 0.3s ease;
+  vertical-align: middle;
+  position: relative;
+  top: -2px;
 }
 
 .project-link:hover {
@@ -821,6 +824,20 @@ section .container {
   background: rgba(24, 210, 110, 0.2);
   box-shadow: 0 6px 25px rgba(24, 210, 110, 0.5);
   transform: scale(1.1) rotate(5deg);
+}
+
+@media (max-width: 768px) {
+  .journey-step {
+    align-items: flex-start;
+  }
+  
+  .journey-icon {
+    margin-top: 4px;
+  }
+  
+  .journey-step:nth-child(1) {
+    margin-left: 63% !important;
+  }
 }
 
 /*--------------------------------------------------------------
