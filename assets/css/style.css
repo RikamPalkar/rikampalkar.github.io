@@ -362,6 +362,8 @@ section .container {
 }
 .about-me .content ul strong {
   margin-right: 10px;
+  display: inline-block;
+  min-width: 150px;
 }
 .about-me .content ul i {
   font-size: 16px;
@@ -606,6 +608,11 @@ section .container {
 }
 .resume .resume-item ul li {
   padding-bottom: 10px;
+  font-family: "Open Sans", sans-serif;
+}
+.resume .resume-item p {
+  font-family: "Open Sans", sans-serif;
+  line-height: 1.6;
 }
 .resume .resume-item:last-child {
   padding-bottom: 0;
@@ -620,6 +627,200 @@ section .container {
   top: 0;
   background: #18d26e;
   border: 2px solid #18d26e;
+}
+
+.project-section {
+  padding: 15px;
+  margin: 10px 0;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.project-section:hover {
+  background: rgba(24, 210, 110, 0.08);
+  box-shadow: 0 0 15px rgba(24, 210, 110, 0.1);
+}
+
+.project-header {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: #18d26e;
+}
+
+.project-subtitle {
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 15px;
+}
+
+.project-subtitle i {
+  color: #18d26e;
+  margin-right: 6px;
+}
+
+.project-link {
+  margin-left: 8px;
+  font-size: 14px;
+  color: #18d26e;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.project-link:hover {
+  color: #1dd97f;
+  transform: translateY(-2px);
+}
+
+.project-skills {
+  margin-top: 15px;
+}
+
+.project-skills-label {
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: #fff;
+  font-size: 14px;
+}
+
+.skill-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.skill-badge {
+  background: rgba(24, 210, 110, 0.15);
+  color: #18d26e;
+  border: 1px solid rgba(24, 210, 110, 0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 13px;
+  display: inline-block;
+  font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.skill-badge:hover {
+  background: rgba(24, 210, 110, 0.25);
+  border-color: #18d26e;
+  transform: translateY(-2px);
+}
+
+.journey-stairs {
+  position: relative;
+  width: 100%;
+  margin-top: 15px;
+  padding: 5px 0;
+  min-height: 200px;
+}
+
+.journey-step {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, rgba(24, 210, 110, 0.1) 0%, rgba(24, 210, 110, 0.05) 100%);
+  border-left: 2px solid rgba(24, 210, 110, 0.5);
+  padding: 6px 10px;
+  margin-bottom: 6px;
+  border-radius: 5px;
+  transition: all 0.3s ease;
+  min-height: 40px;
+}
+
+.journey-step::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 10%;
+  height: 2px;
+  background: rgba(24, 210, 110, 0.5);
+}
+
+.journey-step:first-child::before {
+  width: 100%;
+}
+
+.journey-step:nth-child(2)::before {
+  width: 26%;
+}
+
+.journey-step:nth-child(3)::before {
+  width: 20%;
+}
+
+.journey-step:nth-child(4)::before {
+  width: 16%;
+}
+
+.journey-step:nth-child(5)::before {
+  width: 14%;
+}
+
+.journey-step:nth-child(6)::before {
+  width: 11%;
+}
+
+.journey-step:nth-child(7)::before {
+  width: 11%;
+}
+
+.journey-step:nth-child(8)::before {
+  width: 10%;
+}
+
+.journey-step:hover {
+  background: linear-gradient(135deg, rgba(24, 210, 110, 0.2) 0%, rgba(24, 210, 110, 0.1) 100%);
+  transform: translateX(5px);
+  box-shadow: 0 5px 20px rgba(24, 210, 110, 0.2);
+}
+
+.journey-step-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  flex: 1;
+}
+
+.journey-title {
+  font-size: 12px;
+  color: #fff;
+  font-weight: 600;
+  font-family: "Open Sans", sans-serif;
+  line-height: 1.2;
+}
+
+.journey-date {
+  font-size: 9px;
+  color: rgba(255, 255, 255, 0.6);
+  font-family: "Open Sans", sans-serif;
+}
+
+.journey-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #040b14;
+  border: 2px solid #18d26e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(24, 210, 110, 0.3);
+  flex-shrink: 0;
+}
+
+.journey-icon i {
+  font-size: 15px;
+  color: #18d26e;
+}
+
+.journey-step:hover .journey-icon {
+  background: rgba(24, 210, 110, 0.2);
+  box-shadow: 0 6px 25px rgba(24, 210, 110, 0.5);
+  transform: scale(1.1) rotate(5deg);
 }
 
 /*--------------------------------------------------------------
