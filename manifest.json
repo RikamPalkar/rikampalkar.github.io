@@ -1,0 +1,22 @@
+{
+  "name": "Rikam Palkar - Portfolio",
+  "short_name": "Rikam Palkar",
+  "description": "Portfolio and personal website of Rikam Palkar - Software Developer & Engineer",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#040404",
+  "theme_color": "#18d26e",
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/img/apple-touch-icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
