@@ -1239,11 +1239,17 @@ section .container {
   background: linear-gradient(135deg, rgba(24, 210, 110, 0.2) 0%, rgba(24, 210, 110, 0.1) 100%);
   color: #18d26e;
   border-color: rgba(24, 210, 110, 0.4);
-  margin-left: auto;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   min-width: 117px;
   justify-content: center;
+}
+
+.project-links {
+  display: flex;
+  gap: 12px;
+  margin-left: auto;
+  align-items: center;
 }
 
 .project-link-inline:hover {
