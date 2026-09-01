@@ -1,0 +1,11 @@
+/* Override Vite starter styles so the BootstrapMade
+   theme and sections can use the full page width. */
+
+#root {
+  margin: 0;
+  padding: 0;
+}
+
+.resume-link {
+  color: lightskyblue;
+}

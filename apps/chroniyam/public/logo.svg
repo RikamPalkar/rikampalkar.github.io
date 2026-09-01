@@ -1,0 +1,22 @@
+<svg width="768" height="768" viewBox="0 0 768 768" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <circle cx="384" cy="384" r="384" fill="#f8fafc"/>
+  
+  <!-- Outer ring sections -->
+  <path d="M 384 96 A 288 288 0 0 1 595.2 172.8 L 564.8 203.2 A 248 248 0 0 0 384 136 Z" fill="#0ea5e9" opacity="0.8"/>
+  <path d="M 595.2 172.8 A 288 288 0 0 1 672 384 L 632 384 A 248 248 0 0 0 564.8 203.2 Z" fill="#67e8f9" opacity="0.8"/>
+  <path d="M 672 384 A 288 288 0 0 1 595.2 595.2 L 564.8 564.8 A 248 248 0 0 0 632 384 Z" fill="#06b6d4" opacity="0.8"/>
+  <path d="M 595.2 595.2 A 288 288 0 0 1 384 672 L 384 632 A 248 248 0 0 0 564.8 564.8 Z" fill="#22d3ee" opacity="0.8"/>
+  <path d="M 384 672 A 288 288 0 0 1 172.8 595.2 L 203.2 564.8 A 248 248 0 0 0 384 632 Z" fill="#0ea5e9" opacity="0.8"/>
+  <path d="M 172.8 595.2 A 288 288 0 0 1 96 384 L 136 384 A 248 248 0 0 0 203.2 564.8 Z" fill="#0284c7" opacity="0.8"/>
+  <path d="M 96 384 A 288 288 0 0 1 172.8 172.8 L 203.2 203.2 A 248 248 0 0 0 136 384 Z" fill="#0369a1" opacity="0.8"/>
+  <path d="M 172.8 172.8 A 288 288 0 0 1 384 96 L 384 136 A 248 248 0 0 0 203.2 203.2 Z" fill="#0c4a6e" opacity="0.8"/>
+  
+  <!-- Crosshair -->
+  <line x1="168" y1="384" x2="328" y2="384" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
+  <line x1="440" y1="384" x2="600" y2="384" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
+  <line x1="384" y1="168" x2="384" y2="328" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
+  <line x1="384" y1="440" x2="384" y2="600" stroke="#0ea5e9" stroke-width="8" stroke-linecap="round"/>
+  
+  <!-- Center circle -->
+  <circle cx="384" cy="384" r="24" fill="#0ea5e9"/>
+</svg>

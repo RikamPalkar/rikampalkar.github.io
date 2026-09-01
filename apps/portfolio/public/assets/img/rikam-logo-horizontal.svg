@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 150">
+  <defs>
+    <linearGradient id="horizGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#18d26e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#35e888;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Transparent background for versatility -->
+  
+  <!-- Icon Section - Lightbulb with Code -->
+  <g transform="translate(20, 15)">
+    <!-- Lightbulb outline -->
+    <g stroke="url(#horizGrad)" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <!-- Bulb glass -->
+      <path d="M 60 30 
+               Q 75 30 81 42 
+               Q 87 54 81 66
+               Q 78 71 75 75
+               L 75 82
+               Q 75 84 73 84
+               L 47 84
+               Q 45 84 45 82
+               L 45 75
+               Q 42 71 39 66
+               Q 33 54 39 42
+               Q 45 30 60 30 Z"/>
+      
+      <!-- Base threads -->
+      <line x1="46" y1="87" x2="74" y2="87" />
+      <line x1="46" y1="91" x2="74" y2="91" />
+      
+      <!-- Base cap -->
+      <rect x="44" y="95" width="32" height="6" rx="2" stroke="url(#horizGrad)" fill="url(#horizGrad)" opacity="0.8"/>
+    </g>
+    
+    <!-- Code brackets inside bulb -->
+    <g stroke="url(#horizGrad)" stroke-width="3.5" fill="none" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M 53 52 L 47 60 L 53 68" />
+      <path d="M 67 52 L 73 60 L 67 68" />
+      <!-- Forward slash -->
+      <line x1="64" y1="52" x2="56" y2="68" />
+    </g>
+    
+    <!-- Light rays -->
+    <g stroke="url(#horizGrad)" stroke-width="2.5" stroke-linecap="round">
+      <line x1="60" y1="15" x2="60" y2="25" />
+      <line x1="90" y1="28" x2="84" y2="34" />
+      <line x1="100" y1="58" x2="90" y2="58" />
+      <line x1="36" y1="28" x2="42" y2="34" />
+      <line x1="26" y1="58" x2="36" y2="58" />
+    </g>
+  </g>
+  
+  <!-- Text Section -->
+  <g>
+    <!-- RIKAM PALKAR -->
+    <text x="155" y="85" 
+          font-family="'Poppins', 'Raleway', sans-serif" 
+          font-size="48" 
+          font-weight="700" 
+          fill="url(#horizGrad)">RIKAM <tspan fill="#ffffff">PALKAR</tspan></text>
+    
+    <!-- Tagline -->
+    <text x="155" y="110" 
+          font-family="'Open Sans', sans-serif" 
+          font-size="16" 
+          font-weight="400" 
+          fill="#18d26e" 
+          opacity="0.9">Software Engineer • Architect • Author</text>
+  </g>
+</svg>

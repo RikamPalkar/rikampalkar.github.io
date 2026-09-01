@@ -1,0 +1,26 @@
+{
+  "folders": [
+    {
+      "name": "Website repository",
+      "path": "../.."
+    },
+    {
+      "name": "Portfolio",
+      "path": "."
+    },
+    {
+      "name": "TicTacToe",
+      "path": "../tictactoe"
+    },
+    {
+      "name": "ChroNiyam",
+      "path": "../chroniyam"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/dist": true,
+      "**/node_modules": true
+    }
+  }
+}
