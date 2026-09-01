@@ -1,0 +1,7 @@
+{
+  "name": "rikampalkar-github-io",
+  "private": true,
+  "scripts": {
+    "build": "bash scripts/build-pages.sh"
+  }
+}
