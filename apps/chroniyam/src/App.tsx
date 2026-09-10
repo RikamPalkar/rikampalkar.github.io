@@ -514,7 +514,7 @@ function App() {
       />
       <div className="layout">
         <SideActions 
-          onAddTask={handleAddClick} 
+          onAddTask={handleAddClick}
           onClear={handleClearTasks} 
           hasTasks={tasks.length > 0}
           helpMode={helpMode}
