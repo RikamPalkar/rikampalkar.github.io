@@ -1,4 +1,4 @@
-# What a Monorepo Is and How I Maintain One
+# Monorepo Foundations for Personal Projects
 
 A monorepo is a single Git repository that contains multiple related projects. It is not defined by its size, its build tool, or a particular vendor. It is a repository strategy: one version-control boundary contains code that would otherwise live in several repositories.
 
@@ -8,12 +8,13 @@ For my personal website, the repository is a monorepo because it contains three 
 
 This article explains the repository model that keeps related applications manageable in one place. Read the companion articles for the decision behind it, the deployment mechanics, CI/CD automation, and the exact implementation in this repository.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Understand the architectural decision and why one repository is the right model for a personal website.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): Learn how applications are built and published together using Vite base paths and static artifact assembly.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): See the concrete directories, commands, and daily workflow for this specific project.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Understand the architectural decision and why one repository is the right model for a personal website.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): Learn how applications are built and published together using Vite base paths and static artifact assembly.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): See the concrete directories, commands, and daily workflow for this specific project.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Learn the concepts behind automated building and deployment so you understand what the pipeline does.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Navigate GitHub's interface to monitor and understand your workflow runs.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): Follow the complete workflow from editing code to seeing your change live on the web.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): See why the AI-backed app moves from static GitHub Pages hosting to Vercel.
 
 > **Image prompt: An isometric but minimal engineering illustration of a single Git repository folder containing three distinct small React applications labelled Portfolio, TicTacToe, and ChroNiyam, all connected to one CI pipeline. Show clear folder hierarchy and Git commit nodes. Professional documentation aesthetic, off-white background, ink lines, teal, coral, and amber accents, landscape.**
 
@@ -112,4 +113,4 @@ I would split an application into its own repository if it gained a separate tea
 
 Until those forces exist, one repository is the simpler and more honest architecture.
 
-Continue with [Deploying One Domain with GitHub Pages](03-github-pages-deployment-pipeline.md).
+Continue with [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md).

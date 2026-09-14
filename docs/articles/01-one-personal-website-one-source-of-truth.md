@@ -1,4 +1,4 @@
-# How I Manage My Personal Website: From Repository Sprawl to One System
+# One Personal Website, One Source of Truth
 
 For a personal website, the technical challenge is rarely writing the first component. The harder part arrives later: a portfolio grows, a small interactive project becomes public, another tool needs its own build, and every project begins accumulating a repository, a deployment branch, and a slightly different deployment ritual. The work is still small, but the operational model becomes surprisingly hard to reason about.
 
@@ -14,12 +14,13 @@ These are path-based applications, not subdomains. A subdomain would look like `
 
 This article establishes why one personal web presence needs one clear source of truth. The companion articles provide the practices, deployment mechanics, CI/CD fundamentals, and hands-on workflow to turn that decision into a maintainable system.
 
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Learn what a monorepo is, what it is not, and how application boundaries keep it maintainable.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): Follow the route from a `main` branch commit to a Pages deployment, explaining Vite base paths and artifact assembly.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): See the concrete structure, source directories, public URLs, and daily workflow for this specific project.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Learn what a monorepo is, what it is not, and how application boundaries keep it maintainable.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): Follow the route from a `main` branch commit to a Pages deployment, explaining Vite base paths and artifact assembly.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): See the concrete structure, source directories, public URLs, and daily workflow for this specific project.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Learn what CI/CD is, why it matters, and how the automated pipeline works for personal projects.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Navigate the GitHub interface, read workflow logs, and understand the automation powering your deployments.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): Follow a real example from code change to live website with every command and decision explained.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Extend the GitHub Pages series with a Vercel deployment for the AI-backed app.
 
 > **Image prompt: A clean editorial technical illustration showing one personal website domain, `rikampalkar.github.io`, as a central hub with three clearly labelled routes branching from it: `/`, `/tictactoe/`, and `/ChroNiyam/`. Use a restrained engineering diagram style, warm white background, charcoal text, teal and coral accents, no gradients, no generic server racks, high resolution landscape.**
 
@@ -102,4 +103,4 @@ I make changes where the source lives, not where the site happened to be built. 
 
 That is the whole management model: one product, one active repository, one deployment pipeline, and clear ownership of every directory.
 
-Continue with [What a Monorepo Is and How to Maintain One](02-monorepo-principles-and-maintenance.md).
+Continue with [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md).

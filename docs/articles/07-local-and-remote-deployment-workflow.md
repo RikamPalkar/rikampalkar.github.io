@@ -6,12 +6,13 @@ This article is your operational handbook. It walks through a real example: you 
 
 This article is the practical workflow for making and releasing changes. Read the architecture and concepts articles for context, the GitHub UI guide for monitoring, and reference the technical articles as needed.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Understand the architectural decision behind one repository and automated deployment.
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Learn the boundaries and practices that make this workflow stable.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): Review the build and assembly process that happens after you push.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): Reference the repository structure and daily workflow summary.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Understand the architectural decision behind one repository and automated deployment.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Learn the boundaries and practices that make this workflow stable.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): Review the build and assembly process that happens after you push.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): Reference the repository structure and daily workflow summary.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Understand the CI/CD principles behind the automation you trigger with `git push`.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Learn where to look on GitHub to monitor your deployment after you push.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Continue from static GitHub Pages deployment to the Vercel workflow for ChroNiyamAI.
 
 > **Image prompt: A detailed step-by-step workflow diagram showing: (1) Developer's laptop with code editor and terminal, (2) `git push` arrow to GitHub, (3) GitHub Actions running (with checkmarks), (4) Browser showing the live website with the change visible. Use a time-flow layout from left to right, include command examples as text callouts, professional technical style, landscape orientation.**
 
@@ -330,4 +331,4 @@ Git creates a new commit that undoes the previous one. GitHub Actions runs again
 
 You now know how to develop locally, test, build, and release changes to your personal website. The next time you want to add a feature or fix a bug, follow the steps in this guide. The automation takes care of the rest.
 
-Return to [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md) for a complete reference, or explore any of the other articles as you need deeper understanding.
+Continue with [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md) to see how the same project evolves when one app needs a backend API instead of static GitHub Pages hosting.

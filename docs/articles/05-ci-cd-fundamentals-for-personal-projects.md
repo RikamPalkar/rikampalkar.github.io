@@ -8,12 +8,13 @@ This article explains the concepts behind CI/CD and why they matter for your per
 
 This article teaches CI/CD fundamentals so you understand what is happening behind the scenes. The companion articles show the repository structure, the GitHub Actions implementation, the step-by-step workflow, and the GitHub UI.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Read the architectural decision that made automated deployment necessary and clear.
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Understand the repository structure that CI/CD orchestrates.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): See the workflow and artifact definition that CI/CD implements.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): Learn the concrete directory layout and daily workflow of the project that uses CI/CD.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Read the architectural decision that made automated deployment necessary and clear.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Understand the repository structure that CI/CD orchestrates.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): See the workflow and artifact definition that CI/CD implements.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): Learn the concrete directory layout and daily workflow of the project that uses CI/CD.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Learn the exact mechanics and GitHub UI for triggering and monitoring your deploys.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): Follow the complete commands and decisions you make from code edit to live change.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Apply the same deployment thinking to a Vercel-hosted app with a serverless API.
 
 > **Image prompt: A clean diagram showing three phases side-by-side: (1) Developer at laptop pushing code, (2) Automated machine running build and tests (labeled GitHub Actions), (3) Published website in browser. Use simple icons, flow arrows connecting each stage, restrained color palette (charcoal, teal, coral), off-white background, horizontal landscape.**
 

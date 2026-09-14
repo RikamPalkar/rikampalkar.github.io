@@ -36,7 +36,7 @@ export const continueConversation = async (history: ChatMessage[]) => {
 ## 2. The Problem: Why Client-Side Secrets Are Broken by Design
 
 ### Misconception #1: "It's in `.env.local`, so it's safe"
-Many developers assume that putting credentials in `.env.local` or `.env` keeps them private because `.env.local` is listed in `.gitignore`. 
+Many developers assume that putting credentials in `.env.local` or `.env` keeps them private because `.env.local` is listed in `.gitignore`.
 
 While `.gitignore` prevents the file from being committed to source control (Git), **bundlers like Vite, webpack, and Rollup compile `import.meta.env.VITE_*` variables directly into static string literals inside the compiled JavaScript bundle**.
 
@@ -203,7 +203,7 @@ In **Part 2** of this series, we will take a deep dive into Microsoft Azure infr
 - **Step-by-Step Azure Functions Setup**: Creating an Azure Function App, setting up HTTP triggers, and configuring Azure Key Vault / Application Settings.
 - **Enterprise Deployment Pipeline**: Deploying the serverless proxy to Azure Functions and wiring it with GitHub Actions CI/CD.
 
-Check out [Part 2: Step-by-Step Azure Functions Setup & Production Deployment](./article2.md) for the complete guide.
+Check out [Part 2: Step-by-Step Azure Functions Setup & Production Deployment](./02-deploying-serverless-proxies-with-azure-functions.md) for the complete guide.
 
 ---
 

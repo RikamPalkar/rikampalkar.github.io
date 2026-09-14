@@ -1,4 +1,4 @@
-# Inside My Personal Website Monorepo
+# Inside the Personal Website Monorepo
 
 This is how I manage my personal website: one repository, one public domain, several independent applications, and a deployment pipeline that builds the final site from source on every push to `main`.
 
@@ -8,12 +8,13 @@ The repository is `RikamPalkar/rikampalkar.github.io`. It is both the engineerin
 
 This article is the practical map of the repository and the daily routine for maintaining it. The companion articles provide the migration decision, broader monorepo concepts, pipeline mechanics, CI/CD fundamentals, GitHub interface reference, and hands-on workflow guidance.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Understand the architectural decision that made this structure necessary.
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Learn the general monorepo practices and ownership boundaries that this structure follows.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): Review the static artifact assembly and Vite configuration that turn source into deployed output.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Understand the architectural decision that made this structure necessary.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Learn the general monorepo practices and ownership boundaries that this structure follows.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): Review the static artifact assembly and Vite configuration that turn source into deployed output.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Grasp the CI/CD concepts that automate your deployments.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Learn where to look on GitHub to monitor your automated deployments.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): Follow the exact commands and workflow you use every day to make and release changes.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Add a second hosting model for the AI app that needs a backend function.
 
 > **Image prompt: A premium developer-portfolio architecture illustration titled conceptually "One Website, Many Experiences". Show a browser window for Rikam Palkar's portfolio connected to a TicTacToe game screen and a ChroNiyam productivity dashboard, all sitting inside one repository folder and deploying to GitHub Pages. Use an editorial software architecture style, realistic UI thumbnails but no readable filler text, charcoal, teal, coral, and light amber palette, clean white background, horizontal composition.**
 

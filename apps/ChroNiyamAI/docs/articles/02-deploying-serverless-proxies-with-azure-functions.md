@@ -1,7 +1,7 @@
 # Deploying Secure Serverless Proxies to Azure Functions: A Step-by-Step Production Guide (Part 2)
 
 ## Abstract
-In [Part 1: Securing API Keys in Modern Single-Page Applications](./article.md), we analyzed the architecture of **ChroNiyamAI** — an AI-powered conversational planner — and established why client-side API keys in SPAs pose a severe security vulnerability. We designed a Serverless Proxy pattern to insulate secret OpenAI credentials from client-side bundles.
+In [Part 1: Securing API Keys in Modern Single-Page Applications](./01-securing-api-keys-in-spas.md), we analyzed the architecture of **ChroNiyamAI** — an AI-powered conversational planner — and established why client-side API keys in SPAs pose a severe security vulnerability. We designed a Serverless Proxy pattern to insulate secret OpenAI credentials from client-side bundles.
 
 In **Part 2**, we focus on enterprise-grade production deployment using **Microsoft Azure Functions**. This hands-on guide walks step-by-step through creating an Azure Function App, configuring secure Application Settings for `OPENAI_API_KEY`, writing HTTP trigger functions, setting up CORS, and linking the Azure backend to the ChroNiyamAI frontend.
 

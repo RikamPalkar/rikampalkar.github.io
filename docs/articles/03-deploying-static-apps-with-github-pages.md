@@ -1,4 +1,4 @@
-# Deploying a Multi-App Personal Website with GitHub Pages
+# Deploying Static Apps with GitHub Pages
 
 The repository is the source of truth; GitHub Pages is the delivery mechanism. The deployment design has one job: take a commit from `main`, build all applications deterministically, assemble them at their public paths, and publish the result without manually committing generated bundles.
 
@@ -6,12 +6,13 @@ The repository is the source of truth; GitHub Pages is the delivery mechanism. T
 
 This article focuses on the deployment pipeline and artifact assembly that turns source code into a live website. Other articles provide the architectural context, monorepo practices, CI/CD concepts, GitHub interface guidance, and hands-on workflow.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Understand why one active repository makes deployment clear and repeatable.
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Learn the repository structure and boundaries that this deployment pipeline orchestrates.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): See the source directories, build configuration, and daily development workflow.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Understand why one active repository makes deployment clear and repeatable.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Learn the repository structure and boundaries that this deployment pipeline orchestrates.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): See the source directories, build configuration, and daily development workflow.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Learn the CI/CD concepts that make automated deployment reliable.
 - [GitHub Actions Deep Dive: How Your Website Deploys](06-github-actions-deep-dive.md): Navigate the GitHub interface to watch your deployment pipeline run.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): Follow the complete workflow from local development to live website.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Deploy the AI-backed app on Vercel when static hosting is no longer enough.
 
 > **Image prompt: A polished technical pipeline diagram showing a Git push to main flowing through GitHub Actions: checkout, install dependencies for three apps, build three Vite apps, assemble one static dist artifact, deploy to GitHub Pages, then browser routes for `/`, `/tictactoe/`, and `/ChroNiyam/`. Clean flat vector style, high legibility, off-white canvas, charcoal text, teal and orange accents, no gradients, wide landscape.**
 
@@ -133,4 +134,4 @@ The assembly script clears the root artifact before copying output. If content i
 
 The deployment system is intentionally small, but it is production infrastructure. Changing a public path, a Vite base setting, the assembly script, or the workflow is an API change for website visitors. Build locally, inspect the artifact, and confirm the published URLs after any deployment-related change.
 
-Continue with [The Concrete Architecture of My Personal Website](04-the-rikampalkar-github-io-monorepo.md).
+Continue with [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md).

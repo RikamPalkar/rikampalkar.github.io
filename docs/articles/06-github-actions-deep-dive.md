@@ -6,12 +6,13 @@ This article walks through your GitHub repository, shows where to find the deplo
 
 This article focuses on the GitHub interface and GitHub Actions specifics for your website. Read the fundamentals article for CI/CD concepts, the deployment article for technical configuration, and the workflow guide for the commands you run locally.
 
-- [From Repository Sprawl to One Personal Website](01-from-repository-sprawl-to-one-personal-website.md): Understand the architectural context that makes automated deployment necessary.
-- [What a Monorepo Is and How I Maintain One](02-monorepo-principles-and-maintenance.md): Learn the repository structure and practices that the workflow orchestrates.
-- [Deploying a Multi-App Personal Website with GitHub Pages](03-github-pages-deployment-pipeline.md): Review the technical configuration of the workflow file and build artifact assembly.
-- [Inside My Personal Website Monorepo](04-the-rikampalkar-github-io-monorepo.md): See the concrete source directories and daily workflow of this specific project.
+- [One Personal Website, One Source of Truth](01-one-personal-website-one-source-of-truth.md): Understand the architectural context that makes automated deployment necessary.
+- [Monorepo Foundations for Personal Projects](02-monorepo-foundations-for-personal-projects.md): Learn the repository structure and practices that the workflow orchestrates.
+- [Deploying Static Apps with GitHub Pages](03-deploying-static-apps-with-github-pages.md): Review the technical configuration of the workflow file and build artifact assembly.
+- [Inside the Personal Website Monorepo](04-inside-the-personal-website-monorepo.md): See the concrete source directories and daily workflow of this specific project.
 - [Understanding CI/CD: Fundamentals for Personal Projects](05-ci-cd-fundamentals-for-personal-projects.md): Learn what CI/CD is and why it matters before diving into the GitHub implementation.
 - [Local Development to Live Site: Step-by-Step Deployment Guide](07-local-and-remote-deployment-workflow.md): See the exact commands to develop locally and watch your changes propagate through the GitHub workflow to the live site.
+- [Deploying ChroNiyamAI with Vercel](08-deploying-chroniyamai-with-vercel.md): Learn the Vercel path for ChroNiyamAI when GitHub Pages cannot run the API route.
 
 > **Image prompt: A split-screen interface mockup: Left side shows a GitHub repository page with Actions tab highlighted. Right side shows a workflow run visualization with green checkmarks on build and deploy jobs. Include labels for "Actions tab", "Workflow runs", "Build job", "Deploy job", "Status indicators". Professional documentation style, off-white background, teal and coral accents, realistic UI elements.**
 

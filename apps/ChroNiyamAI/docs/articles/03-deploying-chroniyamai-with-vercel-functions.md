@@ -176,6 +176,10 @@ curl -i -X POST https://your-project-name.vercel.app/api/chat \
 
 The response should come from the Vercel Function, which calls OpenAI privately.
 
+> 📷 *[Screenshot Placeholder: Terminal - Successful curl Request to /api/chat]*
+
+If the endpoint returns `401` with a response like `{"error":{"message":"Protected deployment","code":"401"}}`, the request is being blocked by Vercel Deployment Protection before it reaches `api/chat.ts`. For a public production app, disable Vercel Authentication for the production deployment so browser users and direct `/api/chat` calls can reach the function. Keep protection enabled for preview deployments if you want preview URLs to remain private.
+
 ---
 
 ## 8. Security Verification
@@ -255,3 +259,5 @@ When the frontend and function share the same Vercel deployment, `/api/chat` is 
 Vercel Functions provide a low-friction production path for ChroNiyamAI. The frontend remains a fast static Vite application, while the serverless function protects the OpenAI credential and preserves the existing structured AI workflow.
 
 This approach avoids the Azure-specific setup while maintaining the essential security boundary: browser requests go to your proxy, and only the proxy talks to OpenAI with the private key.
+
+Continue with [Article 08: Deploying ChroNiyamAI with Vercel](../../../docs/08-deploying-chroniyamai-with-vercel.md) for the full production deployment runbook, including GUI settings, commands, deployment protection, and curl verification.
