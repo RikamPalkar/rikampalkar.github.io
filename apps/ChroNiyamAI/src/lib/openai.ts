@@ -9,6 +9,16 @@ const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
+// the model can sometimes send a full ISO datetime instead of a plain HH:MM
+const normalizeTime = (value: string | undefined, fallback: string): string => {
+  const match = value?.match(/(\d{1,2}):(\d{2})/)
+  if (!match) return fallback
+  const hours = Number(match[1])
+  const minutes = Number(match[2])
+  if (hours > 23 || minutes > 59) return fallback
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
+}
+
 const systemPrompt = (referenceDate: string, referenceTime: string): string => `
 You are ChroniyamAI, a friendly conversational planning assistant.
 
@@ -16,15 +26,22 @@ Your job: have a short natural conversation to collect the user's tasks, then cl
 
 For every task you must know:
 - title
-- when they want to start it (startDate)
-- when it is due (dueDate)
+- when they want to start it (startDate, and startTime if they mention one)
 - how long it will take (estimatedHours)
 
-If the user hasn't told you the duration or start date for a task, ask a short, natural follow-up question for exactly that missing detail. Ask about one or two missing things at a time, don't interrogate. Once you have enough information for all tasks mentioned so far, and the user has nothing more to add, finish the conversation.
+If the user hasn't told you the duration or start date for a task, ask a short, natural follow-up question for exactly that missing detail. Ask about one or two missing things at a time, don't interrogate.
 
-The current date and time is ${referenceDate} ${referenceTime}. Use this as "today" when resolving relative dates like "tomorrow" or "next week".
+The current date and time is ${referenceDate} ${referenceTime}. Use this as "today" when resolving relative dates like "tomorrow" or "next week". Do NOT ask the user what time of day they want to start a task - if they don't mention a specific time, just set "timeSpecified" to false and leave startTime as the current time; the app will suggest a free time slot on its own.
 
-Respond ONLY with JSON matching the schema. Set "done": false and fill "reply" with your next conversational message while you are still gathering info (tasks can be an empty array). Set "done": true, leave "reply" as a short friendly closing line, and fill "tasks" with the final list once everything is confirmed.
+Some messages in this conversation may come from a "system" role instead of the user - these are automatic notes confirming a value the user already set directly in the app's UI (for example, editing a task's hours or date by hand). Treat those fields as confirmed and true, and never ask about them again.
+
+IMPORTANT: On every single turn, respond with your CURRENT best-known list of every task mentioned so far in "tasks" - not just once at the end. As soon as the user mentions a task, include it right away, even if some fields are still guesses. For any field you are guessing rather than something the user actually said, still fill in a reasonable value, but set the matching "durationSpecified" (for estimatedHours), "startSpecified" (for startDate), or "timeSpecified" (for startTime) flag to false. Once the user actually confirms that field (directly or via a system note), set the flag to true.
+
+Set "done": true once you have nothing left to ask and every task has durationSpecified and startSpecified true and the user seems finished. Otherwise "done": false.
+
+CRITICAL: "reply" must be ONLY a short, natural conversational message (1-3 sentences max), like you're texting a friend. NEVER include markdown, bullet points, numbered lists, or a field-by-field breakdown of tasks (no "Title:", "Start Date:", "Duration Specified:", etc.) in "reply" - the task list is already shown to the user visually in a separate panel, so do not restate it in text.
+
+Respond ONLY with JSON matching the schema.
 `
 
 const conversationJsonSchema = {
@@ -43,10 +60,13 @@ const conversationJsonSchema = {
             title: { type: 'string' },
             quadrant: { type: 'string', enum: QUADRANTS },
             startDate: { type: 'string' },
-            dueDate: { type: 'string' },
+            startTime: { type: 'string' },
             estimatedHours: { type: 'number' },
+            durationSpecified: { type: 'boolean' },
+            startSpecified: { type: 'boolean' },
+            timeSpecified: { type: 'boolean' },
           },
-          required: ['title', 'quadrant', 'startDate', 'dueDate', 'estimatedHours'],
+          required: ['title', 'quadrant', 'startDate', 'startTime', 'estimatedHours', 'durationSpecified', 'startSpecified', 'timeSpecified'],
           additionalProperties: false,
         },
       },
@@ -104,7 +124,15 @@ export const continueConversation = async (
     tasks: Array.isArray(parsed.tasks)
       ? parsed.tasks.map((task) => ({
           ...task,
+          title: task.title?.trim() || 'Untitled task',
+          startDate: task.startDate || referenceDate,
+          startTime: normalizeTime(task.startTime, referenceTime),
+          estimatedHours: Number(task.estimatedHours) > 0 ? Number(task.estimatedHours) : 1,
           id: crypto.randomUUID(),
+          durationSpecified: task.durationSpecified === true,
+          startSpecified: task.startSpecified === true,
+          timeSpecified: task.timeSpecified === true,
+          spanDays: 1,
         }))
       : [],
   }
