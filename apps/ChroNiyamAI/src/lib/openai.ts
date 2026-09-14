@@ -9,7 +9,6 @@ const formatDate = (date: Date): string => {
   return `${year}-${month}-${day}`
 }
 
-// the model can sometimes send a full ISO datetime instead of a plain HH:MM
 const normalizeTime = (value: string | undefined, fallback: string): string => {
   const match = value?.match(/(\d{1,2}):(\d{2})/)
   if (!match) return fallback
@@ -19,9 +18,28 @@ const normalizeTime = (value: string | undefined, fallback: string): string => {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`
 }
 
-const systemPrompt = (referenceDate: string, referenceTime: string): string => `
-You are ChroniyamAI, a friendly conversational planning assistant.
+const durationJsonSchema = {
+  name: 'task_duration_suggestion',
+  strict: true,
+  schema: {
+    type: 'object',
+    properties: {
+      estimatedHours: { type: 'number' },
+      reasoning: { type: 'string' },
+    },
+    required: ['estimatedHours', 'reasoning'],
+    additionalProperties: false,
+  },
+}
 
+const systemPrompt = (referenceDate: string, referenceTime: string, isSarcastic: boolean = false): string => `
+You are ChroniyamAI, a ${isSarcastic ? 'witty, dryly sarcastic, and humorously playful' : 'friendly'} conversational planning assistant.
+
+${isSarcastic ? `PERSONALITY INSTRUCTIONS:
+- Be witty, sarcastically funny, and teasingly dry in your responses.
+- Gently mock the user's task choices, unrealistic durations, or procrastination habits if appropriate, but stay constructive and get the planning done.
+- Keep replies short (1-3 sentences max) and text-message style. Never break character.
+` : ''}
 Your job: have a short natural conversation to collect the user's tasks, then classify each one into the Eisenhower Matrix (Do First / Schedule / Delegate / Eliminate).
 
 For every task you must know:
@@ -80,38 +98,74 @@ export const continueConversation = async (
   history: ChatMessage[],
   referenceDate: string = formatDate(new Date()),
   referenceTime: string = new Date().toTimeString().slice(0, 5),
+  isSarcastic: boolean = false,
 ): Promise<ConversationResult> => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY
+  const clientKey = import.meta.env.VITE_OPENAI_API_KEY
   const model = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
 
-  if (!apiKey || apiKey === 'your-openai-api-key') {
+  if (clientKey && clientKey !== 'your-openai-api-key') {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${clientKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: 'system', content: systemPrompt(referenceDate, referenceTime, isSarcastic) },
+          ...history,
+        ],
+        temperature: 0.5,
+        response_format: { type: 'json_schema', json_schema: conversationJsonSchema },
+      }),
+    })
+
+    if (!response.ok) {
+      const errorBody = await response.text()
+      throw new Error(`OpenAI request failed: ${response.status} ${errorBody}`)
+    }
+
+    const data = await response.json()
+    const content = data?.choices?.[0]?.message?.content ?? '{}'
+    const parsed = JSON.parse(content) as ConversationResult
+
     return {
-      reply: 'OpenAI API key is not configured. Add a real key to .env.local to enable ChroniyamAI.',
-      done: false,
-      tasks: [],
+      reply: parsed.reply || '',
+      done: parsed.done === true,
+      tasks: Array.isArray(parsed.tasks)
+        ? parsed.tasks.map((task) => ({
+            ...task,
+            title: task.title?.trim() || 'Untitled task',
+            startDate: task.startDate || referenceDate,
+            startTime: normalizeTime(task.startTime, referenceTime),
+            estimatedHours: Number(task.estimatedHours) > 0 ? Number(task.estimatedHours) : 1,
+            id: crypto.randomUUID(),
+            durationSpecified: task.durationSpecified === true,
+            startSpecified: task.startSpecified === true,
+            timeSpecified: task.timeSpecified === true,
+            spanDays: 1,
+          }))
+        : [],
     }
   }
 
-  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+  // Serverless Proxy route
+  const response = await fetch('/api/chat', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${apiKey}`,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model,
-      messages: [
-        { role: 'system', content: systemPrompt(referenceDate, referenceTime) },
-        ...history,
-      ],
-      temperature: 0.4,
-      response_format: { type: 'json_schema', json_schema: conversationJsonSchema },
+      action: 'continue-conversation',
+      messages: history,
+      referenceDate,
+      referenceTime,
+      isSarcastic,
     }),
   })
 
   if (!response.ok) {
-    const errorBody = await response.text()
-    throw new Error(`OpenAI request failed: ${response.status} ${errorBody}`)
+    const errorData = await response.json().catch(() => ({}))
+    throw new Error(errorData.error || `Proxy request failed with status ${response.status}`)
   }
 
   const data = await response.json()
@@ -136,4 +190,53 @@ export const continueConversation = async (
         }))
       : [],
   }
+}
+
+export const suggestTaskDuration = async (title: string, currentHours: number): Promise<number> => {
+  const clientKey = import.meta.env.VITE_OPENAI_API_KEY
+  const model = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
+
+  if (clientKey && clientKey !== 'your-openai-api-key') {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${clientKey}`,
+      },
+      body: JSON.stringify({
+        model,
+        messages: [{
+          role: 'user',
+          content: `Estimate a realistic focused-work duration in hours for this task. Use practical planning judgment, not an extreme maximum. Task: ${title}. Current estimate: ${currentHours || 'not specified'} hours. Return only the requested JSON.`,
+        }],
+        temperature: 0.2,
+        response_format: { type: 'json_schema', json_schema: durationJsonSchema },
+      }),
+    })
+
+    if (!response.ok) throw new Error('AI duration suggestion failed.')
+    const data = await response.json()
+    const parsed = JSON.parse(data?.choices?.[0]?.message?.content ?? '{}') as { estimatedHours?: number }
+    const hours = Number(parsed.estimatedHours)
+    if (!Number.isFinite(hours) || hours <= 0) throw new Error('AI returned an invalid duration.')
+    return Math.min(hours, 24)
+  }
+
+  // Serverless Proxy route
+  const response = await fetch('/api/chat', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'suggest-duration',
+      title,
+      currentHours,
+    }),
+  })
+
+  if (!response.ok) throw new Error('AI duration suggestion via proxy failed.')
+  const data = await response.json()
+  const parsed = JSON.parse(data?.choices?.[0]?.message?.content ?? '{}') as { estimatedHours?: number }
+  const hours = Number(parsed.estimatedHours)
+  if (!Number.isFinite(hours) || hours <= 0) throw new Error('AI returned an invalid duration.')
+  return Math.min(hours, 24)
 }

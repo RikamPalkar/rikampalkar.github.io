@@ -3,8 +3,8 @@
 Ideas to make the app more impressive, in priority order.
 
 ## Critical gaps (before any demo)
-1. **Persistence** — page refresh currently wipes all state (planning mode, tasks, chat). Save to `localStorage` and restore on load. _(in progress)_
-2. **Secure backend for the OpenAI key** — currently called directly from the browser, exposing the API key in devtools. Needs a thin serverless proxy.
+1. **Persistence** — page refresh currently wipes all state (planning mode, tasks, chat). Save to `localStorage` and restore on load. _(Completed)_
+2. **Secure backend for the OpenAI key** — currently called directly from the browser, exposing the API key in devtools. Needs a thin serverless proxy. _(Completed via `/api/chat` Edge function)_
 
 ## High-impact additions
 3. **Voice reply (text-to-speech)** — speak the AI's replies aloud (`SpeechSynthesis`) for a real conversational feel.

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { formatTime12, getPlanOverview, getTaskWarning } from '../lib/scheduleValidator'
+import { suggestTaskDuration } from '../lib/openai'
+import { findEmptySlot, formatTime12, getPlanOverview, getTaskWarning } from '../lib/scheduleValidator'
 import type { PlanningMode, Quadrant, Task } from '../types'
 
 const QUADRANT_INFO: { key: Quadrant; label: string; hint: string; className: string }[] = [
@@ -75,6 +76,8 @@ const RightPanel = ({
 }: RightPanelProps) => {
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [aiFillingTaskId, setAiFillingTaskId] = useState<string | null>(null)
+  const [aiFillError, setAiFillError] = useState('')
 
   const warningsByTask = new Map(tasks.map((task) => [task.id, getTaskWarning(task, tasks, sleepHours, sleepOverriddenDates, referenceDate, referenceTime)]))
   const activeWarningCount = [...warningsByTask.values()].filter(Boolean).length
@@ -88,6 +91,41 @@ const RightPanel = ({
     setDragOverQuadrant(null)
     const taskId = event.dataTransfer.getData('text/plain')
     if (taskId) onUpdateTask(taskId, { quadrant })
+  }
+
+  const handleAiFill = async (task: Task) => {
+    setAiFillingTaskId(task.id)
+    setAiFillError('')
+
+    try {
+      const estimatedHours = await suggestTaskDuration(task.title, task.estimatedHours)
+      const proposedTask = { ...task, estimatedHours, timeSpecified: false }
+      const suggestedTime = findEmptySlot(
+        proposedTask,
+        tasks,
+        sleepHours,
+        sleepOverriddenDates,
+        referenceDate,
+        referenceTime,
+      )
+
+      onUpdateTask(task.id, {
+        startDate: task.startDate || referenceDate,
+        startTime: suggestedTime || task.startTime,
+        estimatedHours,
+        startSpecified: true,
+        timeSpecified: Boolean(suggestedTime),
+        durationSpecified: true,
+      })
+
+      if (!suggestedTime) {
+        setAiFillError('AI found the duration, but no free slot is available. Move another task or choose a different time.')
+      }
+    } catch (error) {
+      setAiFillError(error instanceof Error ? error.message : 'AI Fill failed.')
+    } finally {
+      setAiFillingTaskId(null)
+    }
   }
 
   return (
@@ -182,7 +220,6 @@ const RightPanel = ({
                         onDragStart={(event) => event.dataTransfer.setData('text/plain', task.id)}
                         onClick={() => !locked && setEditingTaskId(task.id)}
                       >
-                        <span className="sticky-note-tape" aria-hidden="true" />
                         {!locked && !isEditing && (
                           <button
                             type="button"
@@ -284,6 +321,16 @@ const RightPanel = ({
                                 )}
                               </div>
                             )}
+
+                            {aiFillError && aiFillingTaskId === null && <div className="note-error"><p>{aiFillError}</p></div>}
+                            <button
+                              type="button"
+                              className="sticky-note-ai"
+                              onClick={() => void handleAiFill(task)}
+                              disabled={aiFillingTaskId !== null}
+                            >
+                              {aiFillingTaskId === task.id ? 'Planning…' : 'AI Fill'}
+                            </button>
 
                             <button
                               type="button"

@@ -16,6 +16,7 @@ const OPENING_MESSAGE = "Hi, I'm ChroniyamAI. Tell me what's on your plate and I
 
 const ChatPanel = ({ referenceDate, referenceTime, onTasksUpdate, pendingContext, onContextConsumed }: ChatPanelProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => loadState('chatMessages', []))
+  const [isSarcastic, setIsSarcastic] = useState<boolean>(() => loadState('isSarcastic', false))
   const [input, setInput] = useState('')
   const [isListening, setIsListening] = useState(false)
   const [isThinking, setIsThinking] = useState(false)
@@ -29,6 +30,7 @@ const ChatPanel = ({ referenceDate, referenceTime, onTasksUpdate, pendingContext
   const referenceRef = useRef({ referenceDate, referenceTime })
 
   useEffect(() => saveState('chatMessages', messages), [messages])
+  useEffect(() => saveState('isSarcastic', isSarcastic), [isSarcastic])
 
   useEffect(() => {
     referenceRef.current = { referenceDate, referenceTime }
@@ -50,6 +52,7 @@ const ChatPanel = ({ referenceDate, referenceTime, onTasksUpdate, pendingContext
     if (!textarea) return
     textarea.style.height = 'auto'
     textarea.style.height = `${Math.min(textarea.scrollHeight, 160)}px`
+    textarea.style.overflowY = textarea.scrollHeight > 160 ? 'auto' : 'hidden'
   }, [input])
 
   useEffect(() => {
@@ -94,7 +97,12 @@ const ChatPanel = ({ referenceDate, referenceTime, onTasksUpdate, pendingContext
     setIsThinking(true)
 
     try {
-      const result = await continueConversation(nextMessages, referenceRef.current.referenceDate, referenceRef.current.referenceTime)
+      const result = await continueConversation(
+        nextMessages,
+        referenceRef.current.referenceDate,
+        referenceRef.current.referenceTime,
+        isSarcastic,
+      )
       setMessages((prev) => [...prev, { role: 'assistant', content: result.reply }])
       onTasksUpdate(result.tasks)
     } catch (err) {
@@ -108,6 +116,14 @@ const ChatPanel = ({ referenceDate, referenceTime, onTasksUpdate, pendingContext
     <div className="chat-panel">
       <header className="chat-panel-header">
         <span className="chat-panel-title">ChroniyamAI</span>
+        <button
+          type="button"
+          className={`sarcastic-btn ${isSarcastic ? 'active' : ''}`}
+          onClick={() => setIsSarcastic((value) => !value)}
+          title="Toggle AI Personality Mode"
+        >
+          {isSarcastic ? '😏 Sarcastic' : '😇 Friendly'}
+        </button>
       </header>
 
       <div className="chat-messages" ref={scrollRef}>

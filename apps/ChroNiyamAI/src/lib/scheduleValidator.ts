@@ -112,7 +112,7 @@ export const getPlanOverview = (
   }
 }
 
-const findEmptySlot = (
+export const findEmptySlot = (
   task: Task,
   allTasks: Task[],
   sleepHours: number,
