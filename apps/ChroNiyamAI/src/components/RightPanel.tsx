@@ -39,6 +39,7 @@ type RightPanelProps = {
   tasks: Task[]
   onUpdateTask: (id: string, updates: Partial<Task>) => void
   onRemoveTask: (id: string) => void
+  onCleanTasks: () => void
   locked: boolean
   onFinalize: () => void
   onStartOver: () => void
@@ -70,6 +71,7 @@ const RightPanel = ({
   tasks,
   onUpdateTask,
   onRemoveTask,
+  onCleanTasks,
   locked,
   onFinalize,
   onStartOver,
@@ -160,9 +162,10 @@ const RightPanel = ({
               disabled={locked}
             />
           </label>
-          <button type="button" className="start-over-btn" onClick={onStartOver}>
-            Start Over
-          </button>
+          <div className="plan-actions">
+            <button type="button" className="clean-tasks-btn" onClick={onCleanTasks} disabled={tasks.length === 0}>Clean</button>
+            <button type="button" className="start-over-btn" onClick={onStartOver}>Start Over</button>
+          </div>
         </div>
       </header>
 
@@ -182,7 +185,7 @@ const RightPanel = ({
       )}
 
       {tasks.length === 0 ? (
-        <div className="right-panel-empty">Start talking on the left and your tasks will show up here.</div>
+        <div className="right-panel-empty">Open Ask AI below to describe your tasks and build your plan.</div>
       ) : (
         <div className="matrix-grid">
           {QUADRANT_INFO.map((quadrant) => (

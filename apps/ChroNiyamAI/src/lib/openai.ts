@@ -32,14 +32,13 @@ const durationJsonSchema = {
   },
 }
 
-const systemPrompt = (referenceDate: string, referenceTime: string, isSarcastic: boolean = false): string => `
-You are ChroniyamAI, a ${isSarcastic ? 'witty, dryly sarcastic, and humorously playful' : 'friendly'} conversational planning assistant.
+const systemPrompt = (referenceDate: string, referenceTime: string, sarcasmLevel: number = 0): string => `
+You are Chroniyam AI, a ${sarcasmLevel === 0 ? 'clear and supportive' : sarcasmLevel < 70 ? 'witty and lightly playful' : 'dryly sarcastic but constructive'} conversational planning assistant.
 
-${isSarcastic ? `PERSONALITY INSTRUCTIONS:
-- Be witty, sarcastically funny, and teasingly dry in your responses.
-- Gently mock the user's task choices, unrealistic durations, or procrastination habits if appropriate, but stay constructive and get the planning done.
-- Keep replies short (1-3 sentences max) and text-message style. Never break character.
-` : ''}
+PERSONALITY INSTRUCTIONS:
+- Use a sarcasm intensity of ${sarcasmLevel}/100.
+- At 0, stay entirely straightforward and supportive. As the level rises, add occasional dry observations about unrealistic durations or procrastination, but never insult, shame, or derail the planning.
+- Keep replies short (1-3 sentences max) and text-message style. Never let humor obscure the next planning action.
 Your job: have a short natural conversation to collect the user's tasks, then classify each one into the Eisenhower Matrix (Do First / Schedule / Delegate / Eliminate).
 
 For every task you must know:
@@ -98,7 +97,7 @@ export const continueConversation = async (
   history: ChatMessage[],
   referenceDate: string = formatDate(new Date()),
   referenceTime: string = new Date().toTimeString().slice(0, 5),
-  isSarcastic: boolean = false,
+  sarcasmLevel: number = 0,
 ): Promise<ConversationResult> => {
   const clientKey = import.meta.env.VITE_OPENAI_API_KEY
   const model = import.meta.env.VITE_OPENAI_MODEL || 'gpt-4o-mini'
@@ -113,7 +112,7 @@ export const continueConversation = async (
       body: JSON.stringify({
         model,
         messages: [
-          { role: 'system', content: systemPrompt(referenceDate, referenceTime, isSarcastic) },
+          { role: 'system', content: systemPrompt(referenceDate, referenceTime, sarcasmLevel) },
           ...history,
         ],
         temperature: 0.5,
@@ -159,7 +158,7 @@ export const continueConversation = async (
       messages: history,
       referenceDate,
       referenceTime,
-      isSarcastic,
+      sarcasmLevel,
     }),
   })
 

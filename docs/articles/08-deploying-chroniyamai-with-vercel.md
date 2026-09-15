@@ -340,12 +340,30 @@ If using Git, push the current branch after committing the deployment prep chang
 
 ```bash
 git status
-git add apps/ChroNiyamAI/vite.config.ts docs/08-deploying-chroniyamai-with-vercel.md
+git add apps/ChroNiyamAI/vite.config.ts docs/articles/08-deploying-chroniyamai-with-vercel.md
 git commit -m "Document ChroNiyamAI Vercel deployment"
 git push
 ```
 
 Vercel should automatically build the connected branch if Git integration is enabled.
+
+### How Vercel detects new changes
+
+Vercel detects new changes through its GitHub integration. After the project is connected to the repository, GitHub sends Vercel a webhook whenever you push a commit or open/update a pull request.
+
+For this project, the flow is:
+
+```text
+You push to GitHub
+  -> Vercel receives a webhook from GitHub
+  -> Vercel checks the connected project settings
+  -> Vercel uses Root Directory: apps/ChroNiyamAI
+  -> Vercel runs Install Command: npm install
+  -> Vercel runs Build Command: npm run build
+  -> Vercel publishes Output Directory: dist
+```
+
+You do not manually upload files to Vercel for every change. A push to the configured production branch, usually `main`, creates a production deployment. Pull requests and other branches usually create preview deployments.
 
 > Screenshot placeholder: Vercel successful production deployment page.
 

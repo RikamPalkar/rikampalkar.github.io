@@ -22,7 +22,7 @@ export default async function handler(req: Request) {
 
   try {
     const body = await req.json()
-    const { action, messages, referenceDate, referenceTime, title, currentHours, isSarcastic } = body
+    const { action, messages, referenceDate, referenceTime, title, currentHours, sarcasmLevel } = body
 
     // Phase 3 Hardening: Input validation and payload size caps
     if (action === 'suggest-duration') {
@@ -97,14 +97,14 @@ export default async function handler(req: Request) {
 
     // Default action: conversational task extraction
     const QUADRANTS = ['Do First', 'Schedule', 'Delegate', 'Eliminate']
+    const safeSarcasmLevel = Math.min(100, Math.max(0, Number(sarcasmLevel) || 0))
     const systemPrompt = `
-You are ChroniyamAI, a ${isSarcastic ? 'witty, dryly sarcastic, and humorously playful' : 'friendly'} conversational planning assistant.
+  You are Chroniyam AI, a ${safeSarcasmLevel === 0 ? 'clear and supportive' : safeSarcasmLevel < 70 ? 'witty and lightly playful' : 'dryly sarcastic but constructive'} conversational planning assistant.
 
-${isSarcastic ? `PERSONALITY INSTRUCTIONS:
-- Be witty, sarcastically funny, and teasingly dry in your responses.
-- Gently mock the user's task choices, unrealistic durations, or procrastination habits if appropriate, but stay constructive and get the planning done.
-- Keep replies short (1-3 sentences max) and text-message style. Never break character.
-` : ''}
+  PERSONALITY INSTRUCTIONS:
+  - Use a sarcasm intensity of ${safeSarcasmLevel}/100.
+  - At 0, stay entirely straightforward and supportive. As the level rises, add occasional dry observations about unrealistic durations or procrastination, but never insult, shame, or derail the planning.
+  - Keep replies short (1-3 sentences max) and text-message style. Never let humor obscure the next planning action.
 Your job: have a short natural conversation to collect the user's tasks, then classify each one into the Eisenhower Matrix (Do First / Schedule / Delegate / Eliminate).
 
 For every task you must know:

@@ -29,7 +29,7 @@ const PlanningSetup = ({ onStart }: PlanningSetupProps) => {
   return (
     <div className="planning-setup">
       <div className="planning-setup-card">
-        <h1>ChroniyamAI</h1>
+        <h1>Chroniyam AI</h1>
         <p>How far ahead do you want to plan?</p>
 
         <div className="planning-mode-options">
