@@ -6,7 +6,7 @@ import RightPanel from './components/RightPanel'
 import { stabilizeTaskIds } from './lib/mergeTasks'
 import { getDateRange } from './lib/scheduleValidator'
 import { clearState, loadState, saveState } from './lib/storage'
-import type { PlanningMode, Task } from './types'
+import type { BalanceCategory, PlanningMode, Task } from './types'
 import './App.css'
 
 const getCurrentDate = () => new Date().toISOString().slice(0, 10)
@@ -14,22 +14,31 @@ const getCurrentTime = () => new Date().toTimeString().slice(0, 5)
 
 type FloatPosition = { left: number; top: number }
 
-const AppHeader = ({ onOpenHelp }: { onOpenHelp: () => void }) => (
+type AppTheme = 'clay' | 'neo'
+
+const AppHeader = ({ onOpenHelp, theme, onToggleTheme }: { onOpenHelp: () => void; theme: AppTheme; onToggleTheme: () => void }) => (
   <header className="app-header">
     <div className="app-brand">
       <img src="/tictactoe-icon.svg" alt="Chroniyam AI logo" className="app-brand-logo" />
       <span>Chroniyam AI</span>
     </div>
-    <button type="button" className="app-help-button" onClick={onOpenHelp} title="About Chroniyam AI" aria-label="About Chroniyam AI">?</button>
+    <div className="app-header-actions">
+      <button type="button" className="theme-switch-button" onClick={onToggleTheme} title={`Switch to ${theme === 'clay' ? 'neobrutalist' : 'claymorphic'} theme`} aria-label={`Switch to ${theme === 'clay' ? 'neobrutalist' : 'claymorphic'} theme`}>
+        {theme === 'clay' ? 'Neo' : 'Clay'}
+      </button>
+      <button type="button" className="app-help-button" onClick={onOpenHelp} title="About Chroniyam AI" aria-label="About Chroniyam AI">?</button>
+    </div>
   </header>
 )
 
 function App() {
   const [planningMode, setPlanningMode] = useState<PlanningMode | null>(() => loadState('planningMode', null))
   const [planningDays, setPlanningDays] = useState(() => loadState('planningDays', 7))
+  const [balanceCategories] = useState<BalanceCategory[]>(() => loadState('balanceCategories', ['work', 'exercise', 'relationships', 'recovery']))
   const [isAiOpen, setIsAiOpen] = useState(false)
   const [aiButtonPosition, setAiButtonPosition] = useState<FloatPosition | null>(null)
   const [isHelpOpen, setIsHelpOpen] = useState(false)
+  const [theme, setTheme] = useState<AppTheme>(() => loadState('appTheme', 'clay'))
   const [referenceDate] = useState(getCurrentDate())
   const [referenceTime] = useState(getCurrentTime())
   const [sleepHours, setSleepHours] = useState(() => loadState('sleepHours', 9))
@@ -37,12 +46,16 @@ function App() {
     () => new Set(loadState<string[]>('sleepOverriddenDates', [])),
   )
   const [tasks, setTasks] = useState<Task[]>(() => loadState('tasks', []))
+  const [pastTasks, setPastTasks] = useState<Task[][]>([])
+  const [futureTasks, setFutureTasks] = useState<Task[][]>([])
   const [locked, setLocked] = useState(() => loadState('locked', false))
   const [pendingContext, setPendingContext] = useState<string[]>([])
   const aiButtonDragRef = useRef({ active: false, moved: false, startX: 0, startY: 0, offsetX: 0, offsetY: 0 })
 
   useEffect(() => saveState('planningMode', planningMode), [planningMode])
   useEffect(() => saveState('planningDays', planningDays), [planningDays])
+  useEffect(() => saveState('balanceCategories', balanceCategories), [balanceCategories])
+  useEffect(() => saveState('appTheme', theme), [theme])
   useEffect(() => saveState('sleepHours', sleepHours), [sleepHours])
   useEffect(() => saveState('sleepOverriddenDates', [...sleepOverriddenDates]), [sleepOverriddenDates])
   useEffect(() => saveState('tasks', tasks), [tasks])
@@ -50,7 +63,18 @@ function App() {
 
   const handleTasksUpdate = (incoming: Task[]) => {
     if (locked) return
-    setTasks((prev) => stabilizeTaskIds(prev, incoming))
+    const allowedDates = new Set(getDateRange(referenceDate, planningDays))
+    const finalDate = getDateRange(referenceDate, planningDays).at(-1) ?? referenceDate
+    const normalizedTasks = incoming.map((task) => ({
+      ...task,
+      startDate: allowedDates.has(task.startDate) ? task.startDate : finalDate,
+    }))
+    setTasks((prev) => {
+      const next = stabilizeTaskIds(prev, normalizedTasks)
+      setPastTasks((history) => [...history, prev])
+      setFutureTasks([])
+      return next
+    })
   }
 
   const handleUpdateTask = (id: string, updates: Partial<Task>) => {
@@ -70,18 +94,52 @@ function App() {
       if (notes.length > 0) setPendingContext((prev) => [...prev, ...notes])
     }
 
-    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, ...updates } : task)))
+    setTasks((prev) => {
+      const next = prev.map((task) => (task.id === id ? { ...task, ...updates } : task))
+      if (JSON.stringify(prev) === JSON.stringify(next)) return prev
+      setPastTasks((history) => [...history, prev])
+      setFutureTasks([])
+      return next
+    })
   }
 
   const handleRemoveTask = (id: string) => {
-    setTasks((prev) => prev.filter((task) => task.id !== id))
+    setTasks((prev) => {
+      const next = prev.filter((task) => task.id !== id)
+      if (next.length === prev.length) return prev
+      setPastTasks((history) => [...history, prev])
+      setFutureTasks([])
+      return next
+    })
   }
 
   const handleCleanTasks = () => {
     if (tasks.length === 0) return
     if (!window.confirm('Clear all tasks from this plan?')) return
+    setPastTasks((history) => [...history, tasks])
+    setFutureTasks([])
     setTasks([])
     setLocked(false)
+  }
+
+  const handleUndo = () => {
+    setPastTasks((history) => {
+      const previous = history.at(-1)
+      if (!previous) return history
+      setFutureTasks((future) => [...future, tasks])
+      setTasks(previous)
+      return history.slice(0, -1)
+    })
+  }
+
+  const handleRedo = () => {
+    setFutureTasks((history) => {
+      const next = history.at(-1)
+      if (!next) return history
+      setPastTasks((past) => [...past, tasks])
+      setTasks(next)
+      return history.slice(0, -1)
+    })
   }
 
   const handleOverrideSleep = (date: string) => {
@@ -89,7 +147,7 @@ function App() {
   }
 
   const handleStartOver = () => {
-    for (const key of ['planningMode', 'planningDays', 'sleepHours', 'sleepOverriddenDates', 'tasks', 'locked', 'chatMessages']) {
+    for (const key of ['planningMode', 'planningDays', 'balanceCategories', 'sleepHours', 'sleepOverriddenDates', 'tasks', 'locked', 'chatMessages']) {
       clearState(key)
     }
     window.location.reload()
@@ -144,14 +202,13 @@ function App() {
 
   if (!planningMode) {
     return (
-      <div className="app-shell">
-        <AppHeader onOpenHelp={() => setIsHelpOpen(true)} />
-        <PlanningSetup
-          onStart={(mode, days) => {
-            setPlanningMode(mode)
-            setPlanningDays(days)
-          }}
-        />
+      <div className={`app-shell theme-${theme}`}>
+        <AppHeader onOpenHelp={() => setIsHelpOpen(true)} theme={theme} onToggleTheme={() => setTheme((value) => value === 'clay' ? 'neo' : 'clay')} />
+        <PlanningSetup onStart={() => {
+          setPlanningMode('week')
+          setPlanningDays(7)
+          setIsAiOpen(true)
+        }} />
         {isHelpOpen && <HelpCarousel onClose={() => setIsHelpOpen(false)} />}
       </div>
     )
@@ -160,12 +217,13 @@ function App() {
   const rangeDates = getDateRange(referenceDate, planningDays)
 
   return (
-    <div className="app-shell">
-      <AppHeader onOpenHelp={() => setIsHelpOpen(true)} />
+    <div className={`app-shell theme-${theme} ${isAiOpen ? 'chat-open' : ''}`}>
+      <AppHeader onOpenHelp={() => setIsHelpOpen(true)} theme={theme} onToggleTheme={() => setTheme((value) => value === 'clay' ? 'neo' : 'clay')} />
 
       <RightPanel
         planningMode={planningMode}
         planningDays={planningDays}
+        balanceCategories={balanceCategories}
         rangeDates={rangeDates}
         referenceDate={referenceDate}
         referenceTime={referenceTime}
@@ -177,37 +235,43 @@ function App() {
         onUpdateTask={handleUpdateTask}
         onRemoveTask={handleRemoveTask}
         onCleanTasks={handleCleanTasks}
+        onUndo={handleUndo}
+        onRedo={handleRedo}
+        canUndo={pastTasks.length > 0}
+        canRedo={futureTasks.length > 0}
         locked={locked}
         onFinalize={() => setLocked(true)}
         onStartOver={handleStartOver}
       />
 
-      {isAiOpen && (
-        <ChatPanel
-          isCollapsed={false}
-          onToggleCollapse={() => setIsAiOpen(false)}
-          referenceDate={referenceDate}
-          referenceTime={referenceTime}
-          onTasksUpdate={handleTasksUpdate}
-          pendingContext={pendingContext}
-          onContextConsumed={() => setPendingContext([])}
-        />
+      <ChatPanel
+        isOpen={isAiOpen}
+        isCollapsed={false}
+        onToggleCollapse={() => setIsAiOpen(false)}
+        referenceDate={referenceDate}
+        referenceTime={referenceTime}
+        planningDays={planningDays}
+        onTasksUpdate={handleTasksUpdate}
+        pendingContext={pendingContext}
+        onContextConsumed={() => setPendingContext([])}
+      />
+      {!isAiOpen && (
+        <button
+          type="button"
+          className="ai-float-button"
+          style={aiButtonPosition ? { left: aiButtonPosition.left, top: aiButtonPosition.top, right: 'auto', bottom: 'auto' } : undefined}
+          onPointerDown={handleAiButtonPointerDown}
+          onPointerMove={handleAiButtonPointerMove}
+          onPointerUp={handleAiButtonPointerUp}
+          onPointerCancel={handleAiButtonPointerUp}
+          onClick={handleAiButtonClick}
+          aria-label="Open Chroniyam AI chat"
+          title="Open Chroniyam AI chat"
+        >
+          <img src="/tictactoe-icon.svg" alt="" aria-hidden="true" />
+          <span>Ask AI</span>
+        </button>
       )}
-      <button
-        type="button"
-        className={`ai-float-button ${isAiOpen ? 'active' : ''}`}
-        style={aiButtonPosition ? { left: aiButtonPosition.left, top: aiButtonPosition.top, right: 'auto', bottom: 'auto' } : undefined}
-        onPointerDown={handleAiButtonPointerDown}
-        onPointerMove={handleAiButtonPointerMove}
-        onPointerUp={handleAiButtonPointerUp}
-        onPointerCancel={handleAiButtonPointerUp}
-        onClick={handleAiButtonClick}
-        aria-label={isAiOpen ? 'Hide Chroniyam AI chat' : 'Open Chroniyam AI chat'}
-        title={isAiOpen ? 'Hide Chroniyam AI chat' : 'Open Chroniyam AI chat'}
-      >
-        <img src="/tictactoe-icon.svg" alt="" aria-hidden="true" />
-        <span>{isAiOpen ? 'Hide AI' : 'Ask AI'}</span>
-      </button>
       {isHelpOpen && <HelpCarousel onClose={() => setIsHelpOpen(false)} />}
     </div>
   )

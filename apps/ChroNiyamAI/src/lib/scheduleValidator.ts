@@ -84,6 +84,11 @@ export type PlanOverview = {
   isOverCapacity: boolean
 }
 
+const formatDateForMessage = (date: string): string => {
+  const [year, month, day] = date.split('-')
+  return `${day}-${month}-${year}`
+}
+
 export const getPlanOverview = (
   tasks: Task[],
   sleepHours: number,
@@ -196,7 +201,7 @@ export const getTaskWarning = (
     if (startMinutes !== null && nowMinutes !== null && startMinutes < nowMinutes) {
       return {
         type: 'past-time',
-        message: `${formatTime12(task.startTime)} on ${task.startDate} has already passed — it's ${formatTime12(referenceTime)} now. Pick a later time.`,
+        message: `${formatTime12(task.startTime)} on ${formatDateForMessage(task.startDate)} has already passed — it's ${formatTime12(referenceTime)} now. Pick a later time.`,
       }
     }
   }
@@ -207,7 +212,7 @@ export const getTaskWarning = (
     const neededDays = Math.ceil(task.estimatedHours / waking)
     return {
       type: 'multi-day-suggested',
-      message: `"${task.title}" needs ${task.estimatedHours}h, more than your ${waking}h waking day (24h − ${sleepHours}h sleep). Stretch it across ${neededDays} days starting ${task.startDate}?`,
+      message: `"${task.title}" needs ${task.estimatedHours}h, more than your ${waking}h waking day (24h − ${sleepHours}h sleep). Stretch it across ${neededDays} days starting ${formatDateForMessage(task.startDate)}?`,
       days: neededDays,
     }
   }
@@ -242,7 +247,7 @@ export const getTaskWarning = (
       return {
         type: 'slot-suggested',
         suggestedTime: suggested,
-        message: `No time given for "${task.title}". I see an empty slot at ${formatTime12(suggested)} on ${task.startDate} — push it there?`,
+        message: `No time given for "${task.title}". I see an empty slot at ${formatTime12(suggested)} on ${formatDateForMessage(task.startDate)} — push it there?`,
       }
     }
     return null

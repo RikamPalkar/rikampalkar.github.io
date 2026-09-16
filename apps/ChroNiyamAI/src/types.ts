@@ -1,6 +1,8 @@
 export type Quadrant = 'Do First' | 'Schedule' | 'Delegate' | 'Eliminate'
 
-export type PlanningMode = 'day' | 'week' | 'month' | 'custom'
+export type PlanningMode = 'day' | 'week' | 'month' | 'custom' | 'balance'
+export type BalanceCategory = 'work' | 'exercise' | 'relationships' | 'learning' | 'hobbies' | 'recovery'
+
 
 export type Task = {
   id: string
@@ -12,6 +14,8 @@ export type Task = {
   durationSpecified: boolean
   startSpecified: boolean
   timeSpecified: boolean
+  completed?: boolean
+  category?: BalanceCategory | 'other'
   // how many consecutive days this task is spread across, once the user accepts a multi-day suggestion
   spanDays: number
 }

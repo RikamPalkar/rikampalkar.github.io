@@ -1,7 +1,10 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { BALANCE_CATEGORY_LABELS, getBalanceQuadrantGuidance, getCategoryTargets } from '../lib/balancePlanner'
+import { downloadCalendarFile } from '../lib/calendarExport'
 import { suggestTaskDuration } from '../lib/openai'
 import { findEmptySlot, formatTime12, getPlanOverview, getTaskWarning } from '../lib/scheduleValidator'
-import type { PlanningMode, Quadrant, Task } from '../types'
+import type { BalanceCategory, PlanningMode, Quadrant, Task } from '../types'
+import { getPlanQuality } from '../lib/planQuality'
 
 const QUADRANT_INFO: { key: Quadrant; label: string; hint: string; className: string }[] = [
   { key: 'Do First', label: 'Do First', hint: 'Urgent & Important', className: 'quadrant-urgent-important' },
@@ -29,6 +32,7 @@ const SHORT_WARNING_LABEL: Record<string, string> = {
 type RightPanelProps = {
   planningMode: PlanningMode
   planningDays: number
+  balanceCategories: BalanceCategory[]
   rangeDates: string[]
   referenceDate: string
   referenceTime: string
@@ -40,6 +44,10 @@ type RightPanelProps = {
   onUpdateTask: (id: string, updates: Partial<Task>) => void
   onRemoveTask: (id: string) => void
   onCleanTasks: () => void
+  onUndo: () => void
+  onRedo: () => void
+  canUndo: boolean
+  canRedo: boolean
   locked: boolean
   onFinalize: () => void
   onStartOver: () => void
@@ -49,18 +57,39 @@ const formatDisplayDate = (dateStr: string): string => {
   if (!dateStr) return ''
   const [year, month, day] = dateStr.split('-')
   if (!year || !month || !day) return dateStr
-  return `${month}/${day}`
+  return `${day}-${month}`
 }
 
 const formatRangeDate = (dateStr: string): string => {
-  const [year, month, day] = dateStr.split('-').map(Number)
-  const date = new Date(year, month - 1, day)
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+  const [year, month, day] = dateStr.split('-')
+  return `${day}-${month}-${year}`
+}
+
+type DisplayTask = Task & { repeatCount: number; repeatEndDate: string }
+
+const getDisplayTasks = (tasks: Task[], selectedDate: string): DisplayTask[] => {
+  if (selectedDate !== 'all') return tasks.map((task) => ({ ...task, repeatCount: 1, repeatEndDate: task.startDate }))
+
+  const grouped = new Map<string, DisplayTask>()
+  for (const task of tasks) {
+    const key = `${task.title.trim().toLowerCase()}|${task.category ?? 'other'}|${task.quadrant}`
+    const current = grouped.get(key)
+    if (!current) {
+      grouped.set(key, { ...task, repeatCount: 1, repeatEndDate: task.startDate })
+      continue
+    }
+    current.repeatCount += 1
+    current.repeatEndDate = task.startDate > current.repeatEndDate ? task.startDate : current.repeatEndDate
+    current.estimatedHours += task.estimatedHours
+    current.completed = current.completed && task.completed
+  }
+  return [...grouped.values()]
 }
 
 const RightPanel = ({
   planningMode,
   planningDays,
+  balanceCategories,
   rangeDates,
   referenceDate,
   referenceTime,
@@ -72,6 +101,10 @@ const RightPanel = ({
   onUpdateTask,
   onRemoveTask,
   onCleanTasks,
+  onUndo,
+  onRedo,
+  canUndo,
+  canRedo,
   locked,
   onFinalize,
   onStartOver,
@@ -80,13 +113,31 @@ const RightPanel = ({
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
   const [aiFillingTaskId, setAiFillingTaskId] = useState<string | null>(null)
   const [aiFillError, setAiFillError] = useState('')
+  const [selectedDate, setSelectedDate] = useState('all')
 
-  const warningsByTask = new Map(tasks.map((task) => [task.id, getTaskWarning(task, tasks, sleepHours, sleepOverriddenDates, referenceDate, referenceTime)]))
+  useEffect(() => {
+    if (selectedDate !== 'all' && !rangeDates.includes(selectedDate)) setSelectedDate('all')
+  }, [rangeDates, selectedDate])
+
+  const warningsByTask = new Map(tasks.map((task) => [task.id, task.completed ? null : getTaskWarning(task, tasks, sleepHours, sleepOverriddenDates, referenceDate, referenceTime)]))
   const activeWarningCount = [...warningsByTask.values()].filter(Boolean).length
-  const allConfirmed = tasks.length > 0 && tasks.every((task) => task.durationSpecified && task.startSpecified)
-  const canFinalize = allConfirmed && activeWarningCount === 0
-
+  const allConfirmed = tasks.length > 0 && tasks.every((task) => task.completed || (task.durationSpecified && task.startSpecified))
   const overview = getPlanOverview(tasks, sleepHours, sleepOverriddenDates, rangeDates)
+  const balanceTargets = planningMode === 'balance' ? getCategoryTargets(balanceCategories, overview.totalCapacity) : []
+  const balanceGuidance = planningMode === 'balance' ? getBalanceQuadrantGuidance(tasks, overview.totalCapacity) : null
+  const balanceReady = planningMode !== 'balance' || (balanceGuidance?.tone === 'good' && !overview.isOverCapacity)
+  const canFinalize = allConfirmed && activeWarningCount === 0 && balanceReady
+  const planQuality = getPlanQuality({ tasks, totalCapacity: overview.totalCapacity, balanceMode: planningMode === 'balance' })
+  const completedTaskCount = tasks.filter((task) => task.completed).length
+  const completionPercent = tasks.length === 0 ? 0 : Math.round((completedTaskCount / tasks.length) * 100)
+  const visibleTasks = selectedDate === 'all' ? tasks : tasks.filter((task) => task.startDate === selectedDate)
+  const displayTasks = getDisplayTasks(visibleTasks, selectedDate)
+  const quadrantHours = QUADRANT_INFO.map((quadrant) => ({
+    ...quadrant,
+    hours: tasks
+      .filter((task) => task.quadrant === quadrant.key)
+      .reduce((total, task) => total + Math.max(0, task.estimatedHours), 0),
+  }))
 
   const handleDrop = (quadrant: Quadrant) => (event: React.DragEvent) => {
     event.preventDefault()
@@ -138,14 +189,17 @@ const RightPanel = ({
             Your Plan <span className="planning-mode-chip">{planningMode}</span>
           </h1>
           <p className="right-panel-subtitle">
-            {formatRangeDate(rangeDates[0])} → {formatRangeDate(rangeDates[rangeDates.length - 1])}, 11:59 PM · building live as you talk on the left
+            {formatRangeDate(rangeDates[0])} → {formatRangeDate(rangeDates[rangeDates.length - 1])}, 11:59 PM · {planningMode === 'balance' ? 'Balance Mode protects Q2 time' : 'building live as you talk with Ask AI'}
           </p>
         </div>
 
         <div className="reference-config">
           <label>
-            <span>Today's date</span>
-            <input type="date" value={referenceDate} disabled className="readonly-field" />
+            <span>View</span>
+            <select value={selectedDate} onChange={(event) => setSelectedDate(event.target.value)} className="date-filter" aria-label="Filter tasks by date">
+              <option value="all">All dates</option>
+              {rangeDates.map((date) => <option key={date} value={date}>{formatRangeDate(date)}</option>)}
+            </select>
           </label>
           <label>
             <span>Current time</span>
@@ -163,29 +217,71 @@ const RightPanel = ({
             />
           </label>
           <div className="plan-actions">
+            <button type="button" className="history-btn" onClick={onUndo} disabled={!canUndo} aria-label="Undo last change" title="Undo last change">↶</button>
+            <button type="button" className="history-btn" onClick={onRedo} disabled={!canRedo} aria-label="Redo last change" title="Redo last change">↷</button>
             <button type="button" className="clean-tasks-btn" onClick={onCleanTasks} disabled={tasks.length === 0}>Clean</button>
             <button type="button" className="start-over-btn" onClick={onStartOver}>Start Over</button>
           </div>
         </div>
       </header>
 
-      {locked && <div className="plan-locked-banner">✅ Plan finalized</div>}
+      {locked && <div className="plan-locked-banner">Plan finalized</div>}
 
       {tasks.length > 0 && (
-        <div className={`plan-overview ${overview.isOverCapacity ? 'over' : ''}`}>
-          <span>
-            {overview.totalAllocated.toFixed(1)}h planned of {overview.totalCapacity.toFixed(1)}h available over {planningDays} day{planningDays === 1 ? '' : 's'}
-          </span>
-          {overview.isOverCapacity && (
-            <span className="plan-overview-warning">
-              Over capacity by {Math.abs(overview.remaining).toFixed(1)}h - extend your planning window, skip sleep on busy days, or trim tasks.
-            </span>
-          )}
+        <div className="plan-overview-row">
+          <section className="plan-quality" aria-label="Plan quality">
+            <div><strong>{planQuality.score}</strong><span>Plan score</span></div>
+            <div><strong>{planQuality.capacityUsage.toFixed(0)}%</strong><span>Capacity</span></div>
+            <div><strong>{planQuality.q2Percentage.toFixed(0)}%</strong><span>Q2 time</span></div>
+            <div><strong>{planQuality.recoveryTime.toFixed(1)}h</strong><span>Recovery</span></div>
+            <div><strong>{planQuality.unscheduledTasks + planQuality.conflictCount}</strong><span>Issues</span></div>
+          </section>
+          <section className={`plan-summary ${overview.isOverCapacity ? 'over' : ''} ${completionPercent === 100 ? 'complete' : ''}`} aria-label="Plan summary">
+            <div className="plan-summary-capacity">
+              <strong>{overview.totalAllocated.toFixed(1)}h</strong>
+              <span>of {overview.totalCapacity.toFixed(1)}h / {planningDays}d</span>
+              {overview.isOverCapacity && <small>Over capacity by {Math.abs(overview.remaining).toFixed(1)}h</small>}
+            </div>
+            <div className="plan-summary-balance">
+              {quadrantHours.map((quadrant) => (
+                <div className="summary-quadrant" key={quadrant.key} title={`${quadrant.label}: ${quadrant.hours.toFixed(1)}h of ${overview.totalCapacity.toFixed(1)}h available`}>
+                  <span className={`balance-dot ${quadrant.className}`} />
+                  <span>{quadrant.hours.toFixed(1)}h / {overview.totalCapacity.toFixed(1)}h</span>
+                  <div className="summary-bar-track"><span className={`balance-bar-fill ${quadrant.className}`} style={{ width: `${Math.min(100, (quadrant.hours / Math.max(overview.totalCapacity, 1)) * 100)}%` }} /></div>
+                </div>
+              ))}
+            </div>
+            <div className="plan-summary-progress" title={`${completedTaskCount} of ${tasks.length} tasks complete`}>
+              <strong>{completionPercent}%</strong>
+              <span>{completedTaskCount}/{tasks.length} done</span>
+              <div className="summary-progress-track"><span style={{ width: `${completionPercent}%` }} /></div>
+            </div>
+          </section>
         </div>
+      )}
+
+      {planningMode === 'balance' && (
+        <section className={`balance-guide ${balanceGuidance?.tone === 'watch' ? 'watch' : ''}`} aria-labelledby="balance-guide-title">
+          <div className="balance-guide-heading">
+            <div>
+              <h2 id="balance-guide-title">Balance Mode</h2>
+              <p>Recommended room for your selected areas</p>
+            </div>
+            <strong>Q2 first</strong>
+          </div>
+          <div className="balance-category-targets">
+            {balanceTargets.map((target) => (
+              <span key={target.category}>{target.label} <b>{target.targetHours.toFixed(1)}h</b></span>
+            ))}
+          </div>
+          <p className="balance-guide-message">{balanceGuidance?.message || 'Protect Q2 time for important work, health, relationships, and recovery.'}</p>
+        </section>
       )}
 
       {tasks.length === 0 ? (
         <div className="right-panel-empty">Open Ask AI below to describe your tasks and build your plan.</div>
+      ) : visibleTasks.length === 0 ? (
+        <div className="right-panel-empty">No tasks planned for {formatRangeDate(selectedDate)}.</div>
       ) : (
         <div className="matrix-grid">
           {QUADRANT_INFO.map((quadrant) => (
@@ -204,10 +300,11 @@ const RightPanel = ({
                 <span>{quadrant.hint}</span>
               </div>
               <div className="matrix-quadrant-tasks">
-                {tasks.filter((task) => task.quadrant === quadrant.key).map((task) => {
+                {displayTasks.filter((task) => task.quadrant === quadrant.key).sort((left, right) => Number(left.completed) - Number(right.completed)).map((task) => {
                   const isEditing = editingTaskId === task.id
-                  const needsInput = !task.durationSpecified || !task.startSpecified
-                  const warning = getTaskWarning(task, tasks, sleepHours, sleepOverriddenDates, referenceDate, referenceTime)
+                  const isAllDatesView = selectedDate === 'all'
+                  const needsInput = !isAllDatesView && (!task.durationSpecified || !task.startSpecified)
+                  const warning = isAllDatesView ? null : getTaskWarning(task, tasks, sleepHours, sleepOverriddenDates, referenceDate, referenceTime)
                   const shortWarning = warning ? SHORT_WARNING_LABEL[warning.type] : null
 
                   const dateInvalid = !task.startSpecified || warning?.type === 'day-overloaded'
@@ -219,6 +316,7 @@ const RightPanel = ({
                       <div
                         className={`sticky-note ${needsInput ? 'needs-input' : ''} ${warning ? 'has-warning' : ''}`}
                         style={{ '--note-rotate': `${getNoteRotation(task.id)}deg` } as React.CSSProperties}
+                        data-task-title={task.title}
                         draggable={!locked && !isEditing}
                         onDragStart={(event) => event.dataTransfer.setData('text/plain', task.id)}
                         onClick={() => !locked && setEditingTaskId(task.id)}
@@ -286,8 +384,18 @@ const RightPanel = ({
                                 />
                               </label>
                             </div>
+                            <label className="sticky-note-edit-field task-category-field">
+                              <span>Area</span>
+                              <select
+                                value={task.category ?? 'other'}
+                                onChange={(event) => onUpdateTask(task.id, { category: event.target.value as Task['category'] })}
+                              >
+                                <option value="other">Other</option>
+                                {Object.entries(BALANCE_CATEGORY_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+                              </select>
+                            </label>
 
-                            {warning && (
+                            {warning ? (
                               <div className="note-error">
                                 <p>{warning.message}</p>
                                 {warning.type === 'slot-suggested' && (
@@ -310,7 +418,7 @@ const RightPanel = ({
                                 )}
                                 {warning.type === 'day-overloaded' && !sleepOverriddenDates.has(warning.date) && (
                                   <button type="button" className="warning-action" onClick={() => onOverrideSleep(warning.date)}>
-                                    Skip sleep on {warning.date}
+                                    Skip sleep on {formatRangeDate(warning.date)}
                                   </button>
                                 )}
                                 {warning.type === 'time-conflict' && warning.suggestedTime && (
@@ -323,48 +431,65 @@ const RightPanel = ({
                                   </button>
                                 )}
                               </div>
-                            )}
+                            ) : null}
 
                             {aiFillError && aiFillingTaskId === null && <div className="note-error"><p>{aiFillError}</p></div>}
-                            <button
-                              type="button"
-                              className="sticky-note-ai"
-                              onClick={() => void handleAiFill(task)}
-                              disabled={aiFillingTaskId !== null}
-                            >
-                              {aiFillingTaskId === task.id ? 'Planning…' : 'AI Fill'}
-                            </button>
+                            <div className="sticky-note-edit-actions">
+                              <button
+                                type="button"
+                                className="sticky-note-ai"
+                                onClick={() => void handleAiFill(task)}
+                                disabled={aiFillingTaskId !== null}
+                              >
+                                {aiFillingTaskId === task.id ? 'Planning…' : 'AI Fill'}
+                              </button>
 
-                            <button
-                              type="button"
-                              className="sticky-note-done"
-                              onClick={() => {
-                                // clicking Done without touching a field means the user accepted the shown default
-                                onUpdateTask(task.id, { durationSpecified: true, startSpecified: true, timeSpecified: true })
-                                setEditingTaskId(null)
-                              }}
-                            >
-                              Done
-                            </button>
+                              <button
+                                type="button"
+                                className="sticky-note-done"
+                                onClick={() => {
+                                  // clicking Done without touching a field means the user accepted the shown default
+                                  onUpdateTask(task.id, { durationSpecified: true, startSpecified: true, timeSpecified: true })
+                                  setEditingTaskId(null)
+                                }}
+                              >
+                                Done
+                              </button>
+                            </div>
                           </div>
                         ) : (
                           <>
-                            <strong className="sticky-note-title">{task.title}</strong>
+                            <div className="sticky-note-title-row">
+                              <input
+                                type="checkbox"
+                                className="task-complete-checkbox"
+                                checked={task.completed === true}
+                                onChange={(event) => onUpdateTask(task.id, { completed: event.target.checked })}
+                                onClick={(event) => event.stopPropagation()}
+                                aria-label={`Mark ${task.title} ${task.completed ? 'incomplete' : 'complete'}`}
+                              />
+                              <strong className={`sticky-note-title ${task.completed ? 'completed' : ''}`}>{task.title}</strong>
+                            </div>
                             <div className="sticky-note-meta">
-                              <span>{formatDisplayDate(task.startDate)}</span>
+                              {selectedDate === 'all' && (
+                                <span>{task.repeatCount > 1 ? `${formatDisplayDate(task.startDate)} : ${formatDisplayDate(task.repeatEndDate)}` : formatDisplayDate(task.startDate)}</span>
+                              )}
                               <span>{formatTime12(task.startTime)}</span>
                               <span>{task.estimatedHours}h{task.spanDays > 1 ? ` · ${task.spanDays}d` : ''}</span>
+                              {task.repeatCount > 1 && <span className="task-repeat-count" aria-label={`${task.repeatCount} repeated days`}>{task.repeatCount}</span>}
                             </div>
-                            {shortWarning && (
-                              <span className="sticky-note-flag" title={warning?.message}>⚠ {shortWarning}</span>
-                            )}
+                            {task.completed ? (
+                              <span className="sticky-note-complete-label">Done</span>
+                            ) : (shortWarning || needsInput) ? (
+                              <span className="sticky-note-flag">⚠ Needs review</span>
+                            ) : null}
                           </>
                         )}
                       </div>
                     </div>
                   )
                 })}
-                {tasks.filter((task) => task.quadrant === quadrant.key).length === 0 && (
+                {displayTasks.filter((task) => task.quadrant === quadrant.key).length === 0 && (
                   <p className="matrix-empty">Drop a task here</p>
                 )}
               </div>
@@ -378,12 +503,25 @@ const RightPanel = ({
           <span className="right-panel-hint">
             {activeWarningCount > 0
               ? `Resolve ${activeWarningCount} issue${activeWarningCount === 1 ? '' : 's'} above before finalizing.`
+              : planningMode === 'balance' && !balanceReady
+                ? 'Balance Mode needs more Q2 time and a plan within available capacity before finalizing.'
               : 'Tap the highlighted notes to confirm date and duration.'}
           </span>
         )}
-        <button type="button" className="draft-btn primary" onClick={onFinalize} disabled={!canFinalize || locked}>
-          {locked ? 'Plan Finalized' : 'Finalize Plan'}
-        </button>
+        <div className="plan-footer-actions">
+          <button
+            type="button"
+            className="draft-btn"
+            onClick={() => downloadCalendarFile(tasks)}
+            disabled={!locked || tasks.length === 0}
+            title={locked ? 'Export finalized plan to your calendar' : 'Finalize the plan to enable calendar export'}
+          >
+            Export Calendar
+          </button>
+          <button type="button" className="draft-btn primary" onClick={onFinalize} disabled={!canFinalize || locked}>
+            {locked ? 'Plan Finalized' : 'Finalize Plan'}
+          </button>
+        </div>
       </footer>
     </div>
   )

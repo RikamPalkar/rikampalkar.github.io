@@ -1,20 +1,20 @@
 :root {
-  --bg: #0a0a0d;
-  --panel: rgba(255, 255, 255, 0.055);
-  --panel-alt: rgba(255, 255, 255, 0.09);
-  --panel-solid: #17171c;
-  --text: #f5f5f7;
-  --muted: #98989f;
-  --border: rgba(255, 255, 255, 0.09);
-  --accent: #6e9dff;
-  --accent-strong: #4f7dff;
-  --radius-lg: 22px;
-  --radius-md: 16px;
-  --radius-sm: 11px;
-  --shadow-soft: 0 1px 2px rgba(0, 0, 0, 0.24), 0 12px 32px rgba(0, 0, 0, 0.28);
-  --shadow-elevated: 0 2px 6px rgba(0, 0, 0, 0.3), 0 20px 48px rgba(0, 0, 0, 0.35);
+  --bg: #e9e4dc;
+  --panel: #eeeae4;
+  --panel-alt: #f7f3ed;
+  --panel-solid: #e4dfd7;
+  --text: #2b3036;
+  --muted: #70757b;
+  --border: rgba(255, 255, 255, 0.78);
+  --accent: #6c8df5;
+  --accent-strong: #5475df;
+  --radius-lg: 28px;
+  --radius-md: 20px;
+  --radius-sm: 14px;
+  --shadow-soft: 10px 10px 22px rgba(166, 158, 147, 0.42), -8px -8px 18px rgba(255, 255, 255, 0.82);
+  --shadow-elevated: 16px 16px 34px rgba(166, 158, 147, 0.48), -12px -12px 26px rgba(255, 255, 255, 0.9);
   --ease: cubic-bezier(0.22, 1, 0.36, 1);
-  color-scheme: dark;
+  color-scheme: light;
   font: 15.5px/1.5 -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Segoe UI', system-ui, Roboto, sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
@@ -30,12 +30,31 @@ html, body, #root {
 }
 
 body {
-  background:
-    radial-gradient(circle at 15% 0%, rgba(110, 157, 255, 0.08), transparent 40%),
-    radial-gradient(circle at 85% 100%, rgba(110, 157, 255, 0.05), transparent 45%),
-    var(--bg);
+  background: var(--bg);
   color: var(--text);
   letter-spacing: -0.01em;
+}
+
+.app-shell.theme-neo {
+  --bg: #fff4a8;
+  --panel: #fffdf0;
+  --panel-alt: #ffffff;
+  --panel-solid: #ffffff;
+  --text: #111111;
+  --muted: #343434;
+  --border: #111111;
+  --accent: #ff5c8a;
+  --accent-strong: #ff8a3d;
+  --radius-lg: 12px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --shadow-soft: 7px 7px 0 #111111;
+  --shadow-elevated: 10px 10px 0 #111111;
+}
+
+.app-shell.theme-clay {
+  --accent: #2b3036;
+  --accent-strong: #171b20;
 }
 
 button {

@@ -20,6 +20,8 @@ export const stabilizeTaskIds = (previous: Task[], next: Task[]): Task[] => {
       id: match.id,
       quadrant: match.quadrant,
       spanDays: match.spanDays,
+      completed: match.completed,
+       category: match.category,
     }
   })
 }

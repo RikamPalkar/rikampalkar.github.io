@@ -5,16 +5,23 @@ import { startVoiceRecognition, type VoiceRecognitionHandle } from '../lib/voice
 import type { ChatMessage, Task } from '../types'
 
 type ChatPanelProps = {
+  isOpen: boolean
   isCollapsed: boolean
   onToggleCollapse: () => void
   referenceDate: string
   referenceTime: string
+  planningDays: number
   onTasksUpdate: (tasks: Task[]) => void
   pendingContext: string[]
   onContextConsumed: () => void
 }
 
 const OPENING_MESSAGE = "Hi, I'm Chroniyam AI. Tell me what's on your plate and I'll help you plan it out."
+const PROMPT_CHIPS = [
+  'I need to finish my report and call mom',
+  'Plan my workout and grocery shopping',
+  'Prepare for tomorrow’s presentation',
+]
 
 const getStoredSarcasmLevel = (): number => {
   const stored = loadState<number | boolean>('isSarcastic', 0)
@@ -41,11 +48,24 @@ const VOICE_SPEEDS = [0.85, 1, 1.15, 1.3, 1.5, 1.75, 2]
 
 const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window && 'SpeechSynthesisUtterance' in window
 
+const unlockSpeech = (): boolean => {
+  if (!canSpeak()) return false
+
+  const synth = window.speechSynthesis
+  synth.cancel()
+  const unlockUtterance = new SpeechSynthesisUtterance(' ')
+  unlockUtterance.volume = 0
+  unlockUtterance.rate = 10
+  synth.speak(unlockUtterance)
+  synth.resume()
+  return true
+}
+
 const speakText = (text: string, tone: VoiceTone, speed: number): boolean => {
   if (!canSpeak() || !text.trim()) return false
 
   const synth = window.speechSynthesis
-  synth.cancel()
+  synth.resume()
   const utterance = new SpeechSynthesisUtterance(text.trim())
   const voice = synth.getVoices().find((candidate) => candidate.lang.toLowerCase().startsWith('en'))
   if (voice) utterance.voice = voice
@@ -57,7 +77,7 @@ const speakText = (text: string, tone: VoiceTone, speed: number): boolean => {
   return true
 }
 
-const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime, onTasksUpdate, pendingContext, onContextConsumed }: ChatPanelProps) => {
+const ChatPanel = ({ isOpen, isCollapsed, onToggleCollapse, referenceDate, referenceTime, planningDays, onTasksUpdate, pendingContext, onContextConsumed }: ChatPanelProps) => {
   const [messages, setMessages] = useState<ChatMessage[]>(() => loadState('chatMessages', []))
   const [sarcasmLevel, setSarcasmLevel] = useState(getStoredSarcasmLevel)
   const [voiceRepliesEnabled, setVoiceRepliesEnabled] = useState(() => loadState('voiceRepliesEnabled', false))
@@ -109,6 +129,7 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
 
   useEffect(() => {
     if (!isListening) return
+    window.speechSynthesis?.cancel()
     suppressResultsRef.current = false
 
     const recognizer = startVoiceRecognition(
@@ -137,6 +158,7 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
     const trimmed = text.trim()
     if (!trimmed || isThinking) return
 
+    window.speechSynthesis?.cancel()
     // stop the mic explicitly and suppress its trailing async result, otherwise it repopulates the box
     suppressResultsRef.current = true
     recognizerRef.current?.stop()
@@ -154,6 +176,7 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
         referenceRef.current.referenceDate,
         referenceRef.current.referenceTime,
         sarcasmLevel,
+        planningDays,
       )
       setMessages((prev) => [...prev, { role: 'assistant', content: result.reply }])
       if (voiceRepliesEnabled && result.reply) {
@@ -167,8 +190,13 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
     }
   }
 
+  const handlePromptChip = (prompt: string) => {
+    setInput(prompt)
+    textareaRef.current?.focus()
+  }
+
   return (
-    <div className={`chat-panel ${isCollapsed ? 'collapsed' : ''}`}>
+    <div className={`chat-panel ${isCollapsed ? 'collapsed' : ''} ${isOpen ? 'open' : 'closed'}`}>
       <header className="chat-panel-header">
         <div className="chat-panel-brand">
           <img src="/tictactoe-icon.svg" alt="Chroniyam AI logo" className="chat-panel-logo" />
@@ -182,8 +210,13 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
                 type="button"
                 className={`voice-icon-button ${voiceRepliesEnabled ? 'active' : ''}`}
                 onClick={() => {
-                  setVoiceRepliesEnabled((value) => !value)
-                  if (voiceRepliesEnabled) window.speechSynthesis?.cancel()
+                  if (voiceRepliesEnabled) {
+                    setVoiceRepliesEnabled(false)
+                    window.speechSynthesis?.cancel()
+                  } else {
+                    unlockSpeech()
+                    setVoiceRepliesEnabled(true)
+                  }
                 }}
                 disabled={!canSpeak()}
                 aria-pressed={voiceRepliesEnabled}
@@ -285,6 +318,13 @@ const ChatPanel = ({ isCollapsed, onToggleCollapse, referenceDate, referenceTime
         <>
           <div className="chat-messages" ref={scrollRef}>
             <div className="chat-bubble assistant">{OPENING_MESSAGE}</div>
+            {messages.length === 0 && !isThinking && (
+              <div className="prompt-chips" aria-label="Example prompts">
+                {PROMPT_CHIPS.map((prompt) => (
+                  <button type="button" key={prompt} onClick={() => handlePromptChip(prompt)}>{prompt}</button>
+                ))}
+              </div>
+            )}
             {messages.filter((message) => message.role !== 'system').map((message, index) => (
               <div key={index} className={`chat-bubble ${message.role}`}>
                 {message.content}
