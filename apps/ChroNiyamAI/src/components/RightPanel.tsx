@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { BALANCE_CATEGORY_LABELS, getBalanceQuadrantGuidance, getCategoryTargets } from '../lib/balancePlanner'
 import { downloadCalendarFile } from '../lib/calendarExport'
 import { suggestTaskDuration } from '../lib/openai'
@@ -30,6 +31,7 @@ const SHORT_WARNING_LABEL: Record<string, string> = {
 }
 
 type RightPanelProps = {
+  theme: 'clay' | 'neo'
   planningMode: PlanningMode
   planningDays: number
   balanceCategories: BalanceCategory[]
@@ -53,16 +55,24 @@ type RightPanelProps = {
   onStartOver: () => void
 }
 
+const getWeekdayAbbr = (dateStr: string): string => {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  if (!year || !month || !day) return ''
+  return new Date(year, month - 1, day).toLocaleDateString('en-US', { weekday: 'short' })
+}
+
 const formatDisplayDate = (dateStr: string): string => {
   if (!dateStr) return ''
   const [year, month, day] = dateStr.split('-')
   if (!year || !month || !day) return dateStr
-  return `${day}-${month}`
+  const weekday = getWeekdayAbbr(dateStr)
+  return weekday ? `${weekday} ${day}-${month}` : `${day}-${month}`
 }
 
 const formatRangeDate = (dateStr: string): string => {
   const [year, month, day] = dateStr.split('-')
-  return `${day}-${month}-${year}`
+  const weekday = getWeekdayAbbr(dateStr)
+  return weekday ? `${weekday} ${day}-${month}-${year}` : `${day}-${month}-${year}`
 }
 
 type DisplayTask = Task & { repeatCount: number; repeatEndDate: string }
@@ -87,6 +97,7 @@ const getDisplayTasks = (tasks: Task[], selectedDate: string): DisplayTask[] => 
 }
 
 const RightPanel = ({
+  theme,
   planningMode,
   planningDays,
   balanceCategories,
@@ -111,6 +122,7 @@ const RightPanel = ({
 }: RightPanelProps) => {
   const [dragOverQuadrant, setDragOverQuadrant] = useState<Quadrant | null>(null)
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null)
+  const [editingPosition, setEditingPosition] = useState<{ top: number; left: number; placement: 'overlap' } | null>(null)
   const [aiFillingTaskId, setAiFillingTaskId] = useState<string | null>(null)
   const [aiFillError, setAiFillError] = useState('')
   const [selectedDate, setSelectedDate] = useState('all')
@@ -311,15 +323,31 @@ const RightPanel = ({
                   const timeInvalid = !task.timeSpecified || warning?.type === 'slot-suggested' || warning?.type === 'time-conflict' || warning?.type === 'past-time'
                   const hoursInvalid = !task.durationSpecified || warning?.type === 'invalid-hours' || warning?.type === 'multi-day-suggested' || warning?.type === 'day-overloaded'
 
-                  return (
-                    <div key={task.id} className={`sticky-note-wrapper ${isEditing ? 'editing' : ''}`}>
+                  const note = (
+                    <div
+                      key={task.id}
+                      className={`${theme === 'neo' ? 'theme-neo' : 'theme-clay'} ${quadrant.className} sticky-note-wrapper ${isEditing ? `editing popover-${editingPosition?.placement ?? 'overlap'}` : ''}`}
+                      style={isEditing && editingPosition ? { top: editingPosition.top, left: editingPosition.left } : undefined}
+                    >
                       <div
                         className={`sticky-note ${needsInput ? 'needs-input' : ''} ${warning ? 'has-warning' : ''}`}
                         style={{ '--note-rotate': `${getNoteRotation(task.id)}deg` } as React.CSSProperties}
                         data-task-title={task.title}
                         draggable={!locked && !isEditing}
                         onDragStart={(event) => event.dataTransfer.setData('text/plain', task.id)}
-                        onClick={() => !locked && setEditingTaskId(task.id)}
+                        onClick={(event) => {
+                          if (locked) return
+                          const bounds = event.currentTarget.getBoundingClientRect()
+                          const popupWidth = Math.min(560, window.innerWidth - 32)
+                          const left = Math.max(16, Math.min(bounds.left, window.innerWidth - popupWidth - 16))
+                          const top = Math.max(16, Math.min(bounds.top, window.innerHeight - 360))
+                          setEditingPosition({
+                            top,
+                            left,
+                            placement: 'overlap',
+                          })
+                          setEditingTaskId(task.id)
+                        }}
                       >
                         {!locked && !isEditing && (
                           <button
@@ -344,16 +372,14 @@ const RightPanel = ({
                                 onChange={(event) => onUpdateTask(task.id, { title: event.target.value })}
                                 autoFocus
                               />
-                              {!locked && (
-                                <button
-                                  type="button"
-                                  className="sticky-note-remove-inline"
-                                  onClick={() => onRemoveTask(task.id)}
-                                  aria-label="Remove task"
-                                >
-                                  ×
-                                </button>
-                              )}
+                              <button
+                                type="button"
+                                className="sticky-note-close-inline"
+                                onClick={() => setEditingTaskId(null)}
+                                aria-label="Close editor"
+                              >
+                                ×
+                              </button>
                             </div>
                             <div className="sticky-note-edit-row">
                               <label className={`sticky-note-edit-field ${dateInvalid ? 'invalid' : ''}`}>
@@ -444,17 +470,30 @@ const RightPanel = ({
                                 {aiFillingTaskId === task.id ? 'Planning…' : 'AI Fill'}
                               </button>
 
-                              <button
-                                type="button"
-                                className="sticky-note-done"
-                                onClick={() => {
-                                  // clicking Done without touching a field means the user accepted the shown default
-                                  onUpdateTask(task.id, { durationSpecified: true, startSpecified: true, timeSpecified: true })
-                                  setEditingTaskId(null)
-                                }}
-                              >
-                                Done
-                              </button>
+                              <div className="sticky-note-save-actions">
+                                {!locked && (
+                                  <button
+                                    type="button"
+                                    className="sticky-note-delete"
+                                    onClick={() => {
+                                      setEditingTaskId(null)
+                                      onRemoveTask(task.id)
+                                    }}
+                                  >
+                                    Delete
+                                  </button>
+                                )}
+                                <button
+                                  type="button"
+                                  className="sticky-note-done"
+                                  onClick={() => {
+                                    onUpdateTask(task.id, { durationSpecified: true, startSpecified: true, timeSpecified: true })
+                                    setEditingTaskId(null)
+                                  }}
+                                >
+                                  Save
+                                </button>
+                              </div>
                             </div>
                           </div>
                         ) : (
@@ -488,6 +527,8 @@ const RightPanel = ({
                       </div>
                     </div>
                   )
+
+                  return isEditing ? createPortal(note, document.body) : note
                 })}
                 {displayTasks.filter((task) => task.quadrant === quadrant.key).length === 0 && (
                   <p className="matrix-empty">Drop a task here</p>

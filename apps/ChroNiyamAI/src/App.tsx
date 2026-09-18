@@ -4,6 +4,7 @@ import HelpCarousel from './components/HelpCarousel'
 import PlanningSetup from './components/PlanningSetup'
 import RightPanel from './components/RightPanel'
 import { stabilizeTaskIds } from './lib/mergeTasks'
+import { applyScheduleHeuristics } from './lib/scheduleHeuristics'
 import { getDateRange } from './lib/scheduleValidator'
 import { clearState, loadState, saveState } from './lib/storage'
 import type { BalanceCategory, PlanningMode, Task } from './types'
@@ -70,7 +71,7 @@ function App() {
       startDate: allowedDates.has(task.startDate) ? task.startDate : finalDate,
     }))
     setTasks((prev) => {
-      const next = stabilizeTaskIds(prev, normalizedTasks)
+      const next = stabilizeTaskIds(prev, applyScheduleHeuristics(normalizedTasks, { referenceDate, referenceTime }))
       setPastTasks((history) => [...history, prev])
       setFutureTasks([])
       return next
@@ -221,6 +222,7 @@ function App() {
       <AppHeader onOpenHelp={() => setIsHelpOpen(true)} theme={theme} onToggleTheme={() => setTheme((value) => value === 'clay' ? 'neo' : 'clay')} />
 
       <RightPanel
+        theme={theme}
         planningMode={planningMode}
         planningDays={planningDays}
         balanceCategories={balanceCategories}

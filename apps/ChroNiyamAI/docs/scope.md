@@ -43,6 +43,15 @@
 
 - Chroniyam AI should be smart enough to map recurring tasks and repeated activities across the planning window automatically.
 
+## Scheduling Heuristics
+
+- **Energy-based** — deep/complex tasks in your peak focus hours, light tasks in low-energy slots
+- **Deadline proximity** — urgent-important tasks get earliest slots automatically
+- **Context/location** — grouping similar tasks together to reduce switching cost
+- **Calendar-aware buffering** — leaving gaps around meetings instead of cramming right after
+- **Task chaining** — sequencing dependent tasks (e.g., "review" only after "draft" is done)
+- **Recurring pattern learning** — noticing you always do admin work at a certain time and defaulting to that
+
 ## Product Features
 
 - Initial planning setup for day, week, month, or custom planning windows.
@@ -92,6 +101,7 @@
 
 ## Technical Stack
 
+- BFF-style serverless proxy layer through the Vercel `/api/chat` function; it is currently a thin frontend-focused API proxy rather than a full backend-for-frontend system.
 - React 19.
 - TypeScript 6.
 - Vite 8.
@@ -101,8 +111,9 @@
 - Browser Web Speech API for speech recognition.
 - Browser SpeechSynthesis API for spoken replies.
 - CSS with responsive media queries, animations, CSS variables, and glass-style panels.
+- Two selectable visual themes: Claymorphism and Neobrutalism.
 - Claymorphic surfaces with soft raised and inset shadows, rounded controls, tactile task cards, and high-contrast status colors.
-- Neobrutalist surfaces with bold outlines, hard offset shadows, flat high-contrast colors, and tighter geometric corners.
+- Neobrutalist surfaces with bold outlines, hard offset shadows, flat high-contrast colors, and square geometric corners.
 - Browser localStorage through the application storage helper.
 - Oxlint for linting.
 - Node.js and npm for dependency management and scripts.
