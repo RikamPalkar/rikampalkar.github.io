@@ -25,6 +25,8 @@ Traditional you have a task lists, but they do not decide what should happen fir
 
 ChroNiyam AI combines natural conversation with the Eisenhower Matrix. The user supplies intent: what they need to do, by typing or speaking. The application supplies structure: priority, estimated duration, time placement, and tradeoffs.
 
+The AI also builds the plan around priorities, mental health, and healthy living, adding space for recovery and balance so the user can make progress without burning out.
+
 The AI does not ask the user to fill in a form for every task. It maps tasks directly, estimates practical durations, detects repeated activities, and asks follow-up questions only when a detail is genuinely important, such as a hard deadline or an immovable appointment.
 
 The plan sorts everything into four zones. First, "Do First" — that's urgent and important, the stuff that needs your attention right now. Then "Schedule" — important work that deserves protected time, so it doesn't get pushed aside. Third, "Delegate" — urgent, but lower value, so it can go to someone else. And finally, "Eliminate" — the distractions, the things that don't need to happen at all.
@@ -62,7 +64,7 @@ The date selector lets the user review a specific day without losing the full we
 ### Speak This Follow-Up Prompt
 
 ```text
-I only have four hours available on Friday, September 25, 2026. Please make that day lighter and move anything flexible to another day.
+I only have two hours available on Friday, September 25, 2026. Please make that day lighter and move anything flexible to another day.
 ```
 
 [Use the microphone, speak the prompt, then show the updated plan]
@@ -80,6 +82,8 @@ Voice input uses browser speech recognition. Optional voice replies use browser 
 ## 2:25-2:48 | AI And Technology
 
 The frontend is built with React, TypeScript, and Vite. The UI supports Claymorphism and Neobrutalism themes.
+
+The code is available in the Git repository. The app is hosted on Vercel today, and it is also designed to be hosted on Microsoft Azure.
 
 For AI, the browser sends conversation context to a Vercel serverless `/api/chat` function. That function keeps the OpenAI API key on the server and forwards structured requests to OpenAI. This gives the app a thin BFF-style layer rather than exposing the production key in the browser.
 

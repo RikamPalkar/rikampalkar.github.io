@@ -388,6 +388,19 @@
   color: var(--accent);
 }
 
+.voice-icon-button.active {
+  border-color: #0f766e;
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+}
+
+.voice-icon-button:not(.active):not(:disabled) {
+  border-color: var(--border);
+  background: var(--panel-alt);
+  color: var(--muted);
+}
+
 .voice-icon-button:disabled {
   cursor: not-allowed;
   opacity: 0.45;
@@ -2701,6 +2714,26 @@ textarea:focus {
   border: none;
   background: transparent;
   box-shadow: none;
+}
+
+.theme-clay .voice-icon-button.active,
+.theme-neo .voice-icon-button.active {
+  border-color: #0f766e !important;
+  background: #0f766e !important;
+  color: #fff !important;
+  box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.18);
+}
+
+.theme-clay .voice-icon-button:not(.active):not(:disabled) {
+  border-color: #94a3b8 !important;
+  background: #e2e8f0 !important;
+  color: #475569 !important;
+}
+
+.theme-clay .chat-mic.active {
+  border-color: #0f766e !important;
+  background: #0f766e !important;
+  color: #fff !important;
 }
 
 .theme-clay.sticky-note-wrapper.editing .sticky-note-ai,
